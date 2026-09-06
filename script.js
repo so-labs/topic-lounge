@@ -1,48 +1,63 @@
-// テーマ設定
-const themeRadios = document.querySelectorAll('input[name="theme"]');
-const prefersDarkScheme = window.matchMedia("(prefers-color-scheme: dark)");
-const metaThemeColor = document.getElementById('theme-color-meta');
+/* ============================================================
+   テーマ設定
+   - data-theme 属性で light/dark/system を切り替え
+   - system時は prefers-color-scheme に追従
+   ============================================================ */
+(() => {
+    const themeRadios = document.querySelectorAll('input[name="theme"]');
+    const prefersDarkScheme = window.matchMedia("(prefers-color-scheme: dark)");
+    const metaThemeColor = document.getElementById('theme-color-meta');
 
-function updateThemeColor(isDark) {
-    if (metaThemeColor) {
-        metaThemeColor.setAttribute('content', isDark ? '#2C3E50' : '#F0F2F5');
+    // モバイルブラウザのUI色(meta theme-color)を明暗テーマに合わせて更新
+    function updateThemeColor(isDark) {
+        if (metaThemeColor) {
+            metaThemeColor.setAttribute('content', isDark ? '#2C3E50' : '#F0F2F5');
+        }
     }
-}
 
-function applyTheme(theme) {
-    let isDark = false;
-    if (theme === 'system') {
-        document.documentElement.removeAttribute('data-theme');
-        isDark = prefersDarkScheme.matches;
-    } else {
-        document.documentElement.setAttribute('data-theme', theme);
-        isDark = theme === 'dark';
+    // 指定されたテーマを <html> の data-theme 属性へ反映する
+    function applyTheme(theme) {
+        let isDark = false;
+        if (theme === 'system') {
+            document.documentElement.removeAttribute('data-theme');
+            isDark = prefersDarkScheme.matches;
+        } else {
+            document.documentElement.setAttribute('data-theme', theme);
+            isDark = theme === 'dark';
+        }
+        updateThemeColor(isDark);
     }
-    updateThemeColor(isDark);
-}
 
-const savedTheme = localStorage.getItem('theme') || 'system';
-const selectedRadio = document.querySelector(`input[name="theme"][value="${savedTheme}"]`);
-if (selectedRadio) {
-    selectedRadio.checked = true;
-}
-applyTheme(savedTheme);
+    // 保存済みテーマを復元(未保存なら system)
+    const savedTheme = localStorage.getItem('theme') || 'system';
+    const selectedRadio = document.querySelector(`input[name="theme"][value="${savedTheme}"]`);
+    if (selectedRadio) {
+        selectedRadio.checked = true;
+    }
+    applyTheme(savedTheme);
 
-themeRadios.forEach(radio => {
-    radio.addEventListener('change', (e) => {
-        const theme = e.target.value;
-        localStorage.setItem('theme', theme);
-        applyTheme(theme);
+    // ラジオボタンの変更時に選択を保存して即反映
+    themeRadios.forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            const theme = e.target.value;
+            localStorage.setItem('theme', theme);
+            applyTheme(theme);
+        });
     });
-});
 
-prefersDarkScheme.addEventListener('change', () => {
-    const currentTheme = localStorage.getItem('theme') || 'system';
-    if (currentTheme === 'system') {
-        applyTheme('system');
-    }
-});
+    // OSの表示モード変更に追従(system 選択時のみ再適用)
+    prefersDarkScheme.addEventListener('change', () => {
+        const currentTheme = localStorage.getItem('theme') || 'system';
+        if (currentTheme === 'system') {
+            applyTheme('system');
+        }
+    });
+})();
 
+/* ============================================================
+   DOM参照(複数ブロックで共有するためモジュールトップレベルに置く)
+   ============================================================ */
+// 生成UI
 const generateButton = document.getElementById('generateButton');
 const ideaDisplay = document.getElementById('ideaDisplay');
 const errorDisplay = document.getElementById('errorDisplay');
@@ -52,22 +67,21 @@ const customWordMode = document.getElementById('customWordMode');
 const customWordInput = document.getElementById('customWordInput');
 const loadingModal = document.getElementById('loadingModal');
 
-// ワード指定の有効/無効切り替え
-if (customWordMode) {
-    customWordMode.addEventListener('change', () => {
-        customWordInput.disabled = !customWordMode.checked;
-        if (customWordMode.checked) {
-            customWordInput.focus();
-        }
-    });
-}
-
-// カスタムセレクト要素
+// カスタムセレクト
 const customSelectWrapper = document.getElementById('customSelectWrapper');
 const customSelectTrigger = document.getElementById('customSelectTrigger');
 const customSelectValue = document.getElementById('customSelectValue');
 const customSelectDropdown = document.getElementById('customSelectDropdown');
 
+// 設定パネル
+const settingsToggle = document.getElementById('settingsToggle');
+const settingsPanel = document.getElementById('settingsPanel');
+const settingsClose = document.getElementById('settingsClose');
+
+/* ============================================================
+   カスタムセレクト(open/close/toggle は設定パネルからも呼ばれる)
+   ============================================================ */
+// ドロップダウンを開く(下の空きが足りなければ上向きに開く)
 function openCustomSelect() {
     if (!customSelectWrapper) return;
 
@@ -90,6 +104,7 @@ function openCustomSelect() {
     }
 }
 
+// ドロップダウンを閉じる
 function closeCustomSelect() {
     if (!customSelectWrapper) return;
     customSelectWrapper.classList.remove('is-open');
@@ -104,12 +119,14 @@ function toggleCustomSelect() {
     }
 }
 
+// オプション選択をネイティブ <select> に反映し、カスタムUIの表示を同期する
 function selectCustomOption(val, text) {
     modelSelect.value = val;
     modelSelect.dispatchEvent(new Event('change'));
     if (customSelectValue) {
         customSelectValue.textContent = text;
     }
+    // 選択状態(is-selected / aria-selected)を全オプションへ反映
     const options = customSelectDropdown.querySelectorAll('.custom-select-option');
     options.forEach(opt => {
         const isSelected = opt.getAttribute('data-value') === val;
@@ -119,34 +136,53 @@ function selectCustomOption(val, text) {
     closeCustomSelect();
 }
 
-if (customSelectTrigger) {
-    customSelectTrigger.addEventListener('click', (e) => {
-        e.stopPropagation();
-        toggleCustomSelect();
-    });
+// カスタムセレクトとワード指定UIのイベント登録
+(() => {
+    // ワード指定の有効/無効切り替え
+    if (customWordMode) {
+        customWordMode.addEventListener('change', () => {
+            customWordInput.disabled = !customWordMode.checked;
+            if (customWordMode.checked) {
+                customWordInput.focus();
+            }
+        });
+    }
 
-    customSelectTrigger.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-            e.preventDefault();
-            openCustomSelect();
+    if (customSelectTrigger) {
+        customSelectTrigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleCustomSelect();
+        });
+
+        // Enter/Space/矢印キーでも開けるように(キーボード操作対応)
+        customSelectTrigger.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                openCustomSelect();
+            }
+        });
+    }
+
+    // Escapeキーでドロップダウンを閉じる
+    // Escapeキーでドロップダウンを閉じる
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && customSelectWrapper && customSelectWrapper.classList.contains('is-open')) {
+            closeCustomSelect();
+            customSelectTrigger.focus();
         }
     });
-}
 
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && customSelectWrapper && customSelectWrapper.classList.contains('is-open')) {
-        closeCustomSelect();
-        customSelectTrigger.focus();
-    }
-});
+    // ドロップダウン外クリックで閉じる
+    document.addEventListener('click', (e) => {
+        if (customSelectWrapper && !customSelectWrapper.contains(e.target)) {
+            closeCustomSelect();
+        }
+    });
+})();
 
-document.addEventListener('click', (e) => {
-    if (customSelectWrapper && !customSelectWrapper.contains(e.target)) {
-        closeCustomSelect();
-    }
-});
-
-// モデル一覧の読み込みとセレクトボックス生成
+/* ============================================================
+   モデル一覧の読み込みとセレクトボックス生成
+   ============================================================ */
 async function loadModels() {
     try {
         const response = await fetch('./models.json');
@@ -161,6 +197,7 @@ async function loadModels() {
         let hasSelected = false;
         let selectedName = '';
 
+        // ネイティブ <select> とカスタムドロップダウンの両方を再構築
         groups.forEach((group) => {
             const optgroup = document.createElement('optgroup');
             optgroup.label = group.group;
@@ -173,6 +210,7 @@ async function loadModels() {
             groupTitle.textContent = group.group;
             customGroup.appendChild(groupTitle);
 
+            // default フラグの付いたモデル(最初の1つ)を選択状態にする
             group.models.forEach((model) => {
                 // ネイティブoption（内部連携・フォールバック用）
                 const option = document.createElement('option');
@@ -223,6 +261,7 @@ async function loadModels() {
             if (customSelectDropdown) customSelectDropdown.appendChild(customGroup);
         });
 
+        // default 指定が無かった場合は先頭モデルを選択
         if (!hasSelected && modelSelect.options.length > 0) {
             modelSelect.options[0].selected = true;
             selectedName = modelSelect.options[0].textContent;
@@ -246,8 +285,12 @@ async function loadModels() {
     }
 }
 
+// モデル一覧を読み込んで初期化
 loadModels();
 
+/* ============================================================
+   生成ボタン
+   ============================================================ */
 generateButton.addEventListener('click', async () => {
     errorDisplay.textContent = '';
     generateButton.disabled = true;
@@ -259,10 +302,12 @@ generateButton.addEventListener('click', async () => {
         generateButton.disabled = false;
         return;
     }
+    // モードとワード指定からリクエストパラメータを組み立てる
     let mode = choiceOnly && choiceOnly.checked ? 'choice_only' : 'default';
     let word = '';
 
     if (customWordMode && customWordMode.checked) {
+        // ワードは最大10文字に切り詰める
         word = (customWordInput.value || '').trim().slice(0, 10);
         if (!word) {
             errorDisplay.textContent = 'ワードを入力してください（単語・最大10文字）';
@@ -275,6 +320,7 @@ generateButton.addEventListener('click', async () => {
         }
     }
 
+    // ローディング表示と20秒タイムアウト(AbortControllerで中断)
     loadingModal.classList.remove('hidden');
 
     const abortController = new AbortController();
@@ -283,6 +329,7 @@ generateButton.addEventListener('click', async () => {
     }, 20000); // 20秒タイムアウト
 
     try {
+        // APIへ生成リクエストを送信
         const response = await fetch('/api/generate', {
             method: 'POST',
             headers: {
@@ -292,8 +339,7 @@ generateButton.addEventListener('click', async () => {
             signal: abortController.signal,
         });
 
-        clearTimeout(timeoutId);
-
+        // 応答はJSONとは限らないためパース失敗を許容する
         let data = {};
         try {
             data = await response.json();
@@ -307,6 +353,7 @@ generateButton.addEventListener('click', async () => {
             throw new Error(data.error || `HTTP error! status: ${response.status}`);
         }
 
+        // 結果の表示(選択肢があればボタン形式で表示)
         if (data.idea) {
             if (data.choices && Array.isArray(data.choices) && data.choices.length >= 2) {
                 ideaDisplay.innerHTML = `${data.idea}<br><br>` + data.choices.map((c, i) => `<button class="choice-btn">${i + 1}. ${c}</button>`).join('');
@@ -318,7 +365,6 @@ generateButton.addEventListener('click', async () => {
             errorDisplay.textContent = '生成に失敗しました。';
         }
     } catch (error) {
-        clearTimeout(timeoutId);
         console.error('クライアントサイドでのエラー:', error);
         ideaDisplay.textContent = '';
         if (error.name === 'AbortError' || error.name === 'TimeoutError') {
@@ -327,30 +373,40 @@ generateButton.addEventListener('click', async () => {
             errorDisplay.textContent = error.message || '通信エラーが発生しました。';
         }
     } finally {
+        // 成功・失敗に関わらずボタンとローディング表示を元に戻す
+        clearTimeout(timeoutId);
         generateButton.disabled = false;
         loadingModal.classList.add('hidden');
     }
 });
 
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').catch((error) => {
-            console.error('Service Worker registration failed:', error);
+/* ============================================================
+   Service Worker 登録
+   ============================================================ */
+(() => {
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js').catch((error) => {
+                console.error('Service Worker registration failed:', error);
+            });
         });
-    });
-}
+    }
+})();
 
-// 設定パネルの開閉
-const settingsToggle = document.getElementById('settingsToggle');
-const settingsPanel = document.getElementById('settingsPanel');
-const settingsClose = document.getElementById('settingsClose');
-
+/* ============================================================
+   設定パネル(open/close はスワイプからも呼ばれる)
+   ============================================================ */
+/* ============================================================
+   設定パネル(open/close はスワイプからも呼ばれる)
+   ============================================================ */
+// 設定パネルとFABを開いた状態にする
 function openPanel() {
     settingsPanel.classList.add('is-open');
     settingsToggle.classList.add('is-open');
     settingsPanel.setAttribute('aria-hidden', 'false');
 }
 
+// 設定パネルを閉じる(開いているカスタムセレクトも一緒に閉じる)
 function closePanel() {
     closeCustomSelect();
     settingsPanel.classList.remove('is-open');
@@ -358,7 +414,11 @@ function closePanel() {
     settingsPanel.setAttribute('aria-hidden', 'true');
 }
 
-if (settingsToggle && settingsPanel) {
+// 設定パネルの開閉イベント登録
+(() => {
+    if (!settingsToggle || !settingsPanel) return;
+
+    // FABクリックでトグル
     settingsToggle.addEventListener('click', (e) => {
         e.stopPropagation();
         settingsPanel.classList.contains('is-open') ? closePanel() : openPanel();
@@ -377,10 +437,16 @@ if (settingsToggle && settingsPanel) {
             closePanel();
         }
     });
-}
+})();
 
-// スワイプで設定パネルの開閉
-(function setupSwipeForSettings() {
+/* ============================================================
+   スワイプで設定パネルの開閉
+   - 閉じている状態で左スワイプ → 開く
+   - 開いている状態で右スワイプ → 閉じる
+   縦スクロールと誤認識しないよう、移動量・速度・方向の
+   各しきい値でスワイプを判定する
+   ============================================================ */
+(() => {
     if (!settingsPanel || !settingsToggle) return;
 
     const THRESHOLD_X = 60;            // 横方向の最小移動量(px)
@@ -388,11 +454,13 @@ if (settingsToggle && settingsPanel) {
     const Y_RATIO_MAX = 0.6;           // |Δy| / |Δx| の上限。これを超えると縦成分優勢とみなして不発
     const MAX_DURATION = 1000;         // 長すぎるスワイプは意図的操作ではないとみなして不発
 
+    // タッチ追跡用の状態
     let tracking = false;
     let startX = 0;
     let startY = 0;
     let startT = 0;
 
+    // タッチ開始: 単一タッチのみ追跡対象とする
     document.addEventListener('touchstart', (e) => {
         if (e.touches.length !== 1) {
             tracking = false;
@@ -410,6 +478,7 @@ if (settingsToggle && settingsPanel) {
         // 縦スクロールを妨げないよう、ここでは何もしない(判定はtouchendで行う)
     }, { passive: true });
 
+    // タッチ終了: 蓄積した座標からスワイプ判定を行う
     document.addEventListener('touchend', (e) => {
         if (!tracking) return;
         tracking = false;

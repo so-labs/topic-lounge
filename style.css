@@ -1,33 +1,31 @@
-﻿:root {
-    --bg-color: #F0F2F5;
-    --container-bg: #FFFFFF;
-    --text-color: #34495E;
-    --text-color-strong: #2C3E50;
-    --primary-color: #F39C12;
-    --input-bg: #FFFFFF;
-    --input-text: #2C3E50;
-    --input-border: #BDC3C7;
-    --toggle-active-bg: #E0E4E8;
-    --choice-bg: #E2E8F0;
-    --choice-text: #2C3E50;
-}
+﻿/* ============================================================
+   Conversation Starter - スタイルシート
+   構成:
+     1. テーマ(カラーパレット)
+     2. ベースレイアウト
+     3. ユーティリティ
+     4. コンポーネント
+        - カスタムセレクトボックス
+        - メインコンテナ・生成UI
+        - チェックボックスUI(モード選択・ワード指定)
+        - 選択肢ボタン(生成結果)
+        - 設定パネル(FAB + パネル本体)
+        - テーマ切り替えトグル
+        - ローディングモーダル
+     5. レスポンシブ
+   ============================================================ */
 
-@media (prefers-color-scheme: dark) {
-    :root {
-        --bg-color: #2C3E50;
-        --container-bg: #34495E;
-        --text-color: #ECF0F1;
-        --text-color-strong: #ffffff;
-        --primary-color: #F39C12;
-        --input-bg: #ECF0F1;
-        --input-text: #2C3E50;
-        --input-border: #34495E;
-        --toggle-active-bg: #2C3E50;
-        --choice-bg: #ECF0F1;
-        --choice-text: #2C3E50;
-    }
-}
+/* ============================================================
+   1. テーマ(カラーパレット)
+   - :root                 ... data-theme 未指定 (= system)
+   - [data-theme="light"]  ... ユーザーが light を明示選択
+   - [data-theme="dark"]   ... ユーザーが dark を明示選択
+   system は prefers-color-scheme(OS設定) に追従するため、
+   ダークパレットは media query と属性セレクタの2箇所で定義する
+   ============================================================ */
 
+/* ライトテーマ(デフォルト) */
+:root,
 [data-theme="light"] {
     --bg-color: #F0F2F5;
     --container-bg: #FFFFFF;
@@ -42,6 +40,24 @@
     --choice-text: #2C3E50;
 }
 
+/* ダークテーマ: OS設定が dark かつ data-theme 未指定(system)のとき */
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        --bg-color: #2C3E50;
+        --container-bg: #34495E;
+        --text-color: #ECF0F1;
+        --text-color-strong: #ffffff;
+        --primary-color: #F39C12;
+        --input-bg: #ECF0F1;
+        --input-text: #2C3E50;
+        --input-border: #34495E;
+        --toggle-active-bg: #2C3E50;
+        --choice-bg: #ECF0F1;
+        --choice-text: #2C3E50;
+    }
+}
+
+/* ダークテーマ: ユーザーが明示的に dark を選択したとき */
 [data-theme="dark"] {
     --bg-color: #2C3E50;
     --container-bg: #34495E;
@@ -56,11 +72,14 @@
     --choice-text: #2C3E50;
 }
 
+/* ============================================================
+   2. ベースレイアウト
+   ============================================================ */
 body {
     font-family: 'M PLUS Rounded 1c', sans-serif;
     display: flex;
-    min-height: 100vh;
     /* 古いブラウザ用フォールバック */
+    min-height: 100vh;
     min-height: 100dvh;
     margin: 0;
     background-color: var(--bg-color);
@@ -68,6 +87,7 @@ body {
     box-sizing: border-box;
 }
 
+/* ページ全体を中央寄せするラッパー */
 .main-wrapper {
     margin: auto;
     width: 100%;
@@ -78,6 +98,7 @@ body {
     gap: 20px;
 }
 
+/* メインの丸角カード */
 .container {
     text-align: center;
     padding: 50px 40px;
@@ -96,6 +117,7 @@ body {
     box-sizing: border-box;
 }
 
+/* モデル選択エリア */
 .model-select-container {
     margin-bottom: 20px;
 }
@@ -108,6 +130,9 @@ body {
     /* プルダウンとの間に少し余白を設ける */
 }
 
+/* ============================================================
+   3. ユーティリティ
+   ============================================================ */
 /* スクリーンリーダー・アクセシビリティ用非表示ユーティリティ */
 .visually-hidden {
     position: absolute !important;
@@ -121,12 +146,15 @@ body {
     border: 0 !important;
 }
 
-/* カスタムセレクトボックス */
+/* ============================================================
+   4. コンポーネント: カスタムセレクトボックス
+   ============================================================ */
 .custom-select-wrapper {
     position: relative;
     width: 100%;
 }
 
+/* セレクトの見た目を持つトリガーボタン */
 .custom-select-trigger {
     width: 100%;
     box-sizing: border-box;
@@ -134,7 +162,7 @@ body {
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    font-family: 'M PLUS Rounded 1c', sans-serif;
+    font-family: inherit;
     font-size: 0.95em;
     font-weight: 500;
     padding: 9px 12px;
@@ -152,6 +180,7 @@ body {
     border-color: var(--primary-color);
 }
 
+/* フォーカス時・開いている時は強調表示 */
 .custom-select-trigger:focus-visible,
 .custom-select-wrapper.is-open .custom-select-trigger {
     outline: none;
@@ -159,6 +188,7 @@ body {
     box-shadow: 0 0 0 3px rgba(243, 156, 18, 0.25);
 }
 
+/* 選択中の値(長い場合は省略表示) */
 .custom-select-value {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -166,6 +196,7 @@ body {
     flex-grow: 1;
 }
 
+/* 開閉で回転する矢印アイコン */
 .custom-select-arrow {
     flex-shrink: 0;
     color: var(--text-color);
@@ -176,6 +207,7 @@ body {
     transform: rotate(180deg);
 }
 
+/* ドロップダウン本体(アニメーション付きで開閉) */
 .custom-select-dropdown {
     position: absolute;
     top: calc(100% + 6px);
@@ -203,6 +235,7 @@ body {
     scrollbar-width: thin;
 }
 
+/* 画面下端との距離が狭い場合は上向きに開く(JSから open-upward を付与) */
 .custom-select-wrapper.open-upward .custom-select-dropdown {
     top: auto;
     bottom: calc(100% + 6px);
@@ -210,6 +243,7 @@ body {
     transform: translateY(8px) scale(0.98);
 }
 
+/* 開いている状態 */
 .custom-select-wrapper.is-open .custom-select-dropdown {
     opacity: 1;
     visibility: visible;
@@ -217,13 +251,14 @@ body {
     transform: translateY(0) scale(1);
 }
 
+/* ダークテーマ時のドロップダウン専用配色 */
 [data-theme="dark"] .custom-select-dropdown {
     background-color: #283747;
     border-color: #4a627a;
     box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
 }
 
-/* カスタムスクロールバー */
+/* カスタムスクロールバー(WebKit系) */
 .custom-select-dropdown::-webkit-scrollbar {
     width: 5px;
 }
@@ -274,18 +309,21 @@ body {
     user-select: none;
 }
 
+/* ホバー時(ハイライトはJSから付与される場合もあり) */
 .custom-select-option:hover,
 .custom-select-option.is-highlighted {
     background-color: var(--toggle-active-bg);
     color: var(--text-color-strong);
 }
 
+/* 選択中の項目 */
 .custom-select-option.is-selected {
     background-color: var(--primary-color);
     color: #FFFFFF;
     font-weight: 700;
 }
 
+/* 選択中の項目にのみ表示されるチェックマーク */
 .custom-select-check {
     opacity: 0;
     margin-left: 6px;
@@ -297,6 +335,9 @@ body {
     opacity: 1;
 }
 
+/* ============================================================
+   4. コンポーネント: メインコンテナ・生成UI
+   ============================================================ */
 h1 {
     color: var(--text-color-strong);
     font-size: 2.5em;
@@ -304,8 +345,9 @@ h1 {
     margin-bottom: 24px;
 }
 
+/* 「アイデアを生成」ボタン */
 #generateButton {
-    font-family: "M PLUS Rounded 1c", sans-serif;
+    font-family: inherit;
     padding: 15px 30px;
     font-size: 1.5em;
     cursor: pointer;
@@ -321,6 +363,7 @@ h1 {
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
 }
 
+/* 生成中は押せないことを示す */
 #generateButton:disabled {
     opacity: 0.6;
     cursor: not-allowed;
@@ -328,6 +371,7 @@ h1 {
     box-shadow: none;
 }
 
+/* 生成結果の表示エリア */
 #ideaDisplay {
     margin-top: 30px;
     width: 100%;
@@ -341,6 +385,7 @@ h1 {
     overflow-wrap: break-word;
 }
 
+/* エラーメッセージ(空のときは非表示) */
 .error-message {
     color: #e74c3c;
     font-size: 1.1em;
@@ -352,51 +397,12 @@ h1 {
     display: none;
 }
 
+/* ============================================================
+   4. コンポーネント: チェックボックスUI(モード選択・ワード指定)
+   ============================================================ */
 .mode-select-container {
     margin-top: 15px;
     margin-bottom: 10px;
-}
-
-.mode-select-container label {
-    color: var(--text-color);
-    font-size: 1em;
-    cursor: pointer;
-    user-select: none;
-    display: flex;
-    width: 100%;
-    padding: 6px 0;
-    box-sizing: border-box;
-    align-items: center;
-    gap: 8px;
-}
-
-.mode-select-container input[type="checkbox"] {
-    appearance: none;
-    width: 18px;
-    height: 18px;
-    border: 2px solid var(--text-color);
-    border-radius: 4px;
-    background-color: transparent;
-    cursor: pointer;
-    position: relative;
-    transition: all 0.2s;
-}
-
-.mode-select-container input[type="checkbox"]:checked {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
-}
-
-.mode-select-container input[type="checkbox"]:checked::after {
-    content: '';
-    width: 10px;
-    height: 10px;
-    background-color: white;
-    border-radius: 50%;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
 }
 
 .custom-word-container {
@@ -408,6 +414,8 @@ h1 {
     gap: 10px;
 }
 
+/* ラベルのスタイルは両コンテナで共通 */
+.mode-select-container label,
 .custom-word-container label {
     color: var(--text-color);
     font-size: 1em;
@@ -421,6 +429,8 @@ h1 {
     gap: 8px;
 }
 
+/* チェックボックスのスタイルは両コンテナで共通(自前描画) */
+.mode-select-container input[type="checkbox"],
 .custom-word-container input[type="checkbox"] {
     appearance: none;
     width: 18px;
@@ -433,11 +443,14 @@ h1 {
     transition: all 0.2s;
 }
 
+.mode-select-container input[type="checkbox"]:checked,
 .custom-word-container input[type="checkbox"]:checked {
     background-color: var(--primary-color);
     border-color: var(--primary-color);
 }
 
+/* チェック時は中央に白ドットを表示 */
+.mode-select-container input[type="checkbox"]:checked::after,
 .custom-word-container input[type="checkbox"]:checked::after {
     content: '';
     width: 10px;
@@ -450,8 +463,9 @@ h1 {
     transform: translate(-50%, -50%);
 }
 
+/* ワード入力欄 */
 .custom-word-container input[type="text"] {
-    font-family: 'M PLUS Rounded 1c', sans-serif;
+    font-family: inherit;
     font-size: 1em;
     padding: 6px 10px;
     border: 2px solid var(--input-border);
@@ -467,11 +481,15 @@ h1 {
     border-color: var(--primary-color);
 }
 
+/* チェックが外れている間は入力できないことを示す */
 .custom-word-container input[type="text"]:disabled {
     opacity: 0.5;
     cursor: not-allowed;
 }
 
+/* ============================================================
+   4. コンポーネント: 選択肢ボタン(生成結果)
+   ============================================================ */
 .choice-btn {
     margin: 6px;
     padding: 10px 16px;
@@ -479,7 +497,7 @@ h1 {
     border-radius: 12px;
     background: var(--choice-bg);
     color: var(--choice-text);
-    font-family: 'M PLUS Rounded 1c', sans-serif;
+    font-family: inherit;
     font-size: 0.5em;
     cursor: pointer;
     transition: transform 0.2s, background-color 0.2s, color 0.2s;
@@ -491,10 +509,12 @@ h1 {
     color: white;
 }
 
-/* 設定FABボタン（右端から半分はみ出る丸型）
+/* ============================================================
+   4. コンポーネント: 設定パネル(FAB + パネル本体)
    - パネル閉じ時: 右端に半分隠れた位置で待機
    - パネル開き時: 左へ出て黄色で待機(視覚的フィードバック)
-   - 閉じた瞬間: 上記の位置へアニメーションで戻る */
+   - 閉じた瞬間: 上記の位置へアニメーションで戻る
+   ============================================================ */
 .settings-fab {
     position: fixed;
     right: 0;
@@ -525,6 +545,7 @@ h1 {
     transform: translateY(-50%) translateX(0) scale(1.08);
 }
 
+/* パネル開き時はアクセントカラーに切り替え */
 .settings-fab.is-open {
     transform: translateY(-50%) translateX(0);
     background-color: var(--primary-color);
@@ -532,6 +553,7 @@ h1 {
     box-shadow: -6px 4px 20px rgba(243, 156, 18, 0.4);
 }
 
+/* アイコンはホバーで傾き、パネル開きで45度回転 */
 .settings-fab svg {
     transition: transform 0.4s ease;
     flex-shrink: 0;
@@ -545,7 +567,7 @@ h1 {
     transform: rotate(45deg);
 }
 
-/* 設定パネル */
+/* パネル本体(閉じている間は画面外に退避) */
 .settings-panel {
     position: fixed;
     right: 0;
@@ -569,6 +591,7 @@ h1 {
     transform: translateY(-50%) translateX(0);
 }
 
+/* パネルのヘッダー */
 .settings-panel-header {
     background-color: var(--primary-color);
     color: white;
@@ -582,6 +605,7 @@ h1 {
     border-top-left-radius: 20px;
 }
 
+/* 閉じるボタン */
 .settings-close-btn {
     background: rgba(255, 255, 255, 0.2);
     border: none;
@@ -602,6 +626,7 @@ h1 {
     transform: rotate(30deg);
 }
 
+/* パネルの本文 */
 .settings-panel-body {
     padding: 16px 18px;
     display: flex;
@@ -609,6 +634,7 @@ h1 {
     gap: 12px;
 }
 
+/* パネル内では余白を詰めて縦積みにする */
 .settings-panel .model-select-container {
     margin-bottom: 0;
 }
@@ -632,7 +658,9 @@ h1 {
     margin-top: 4px;
 }
 
-/* テーマ切り替え用のスタイル */
+/* ============================================================
+   4. コンポーネント: テーマ切り替えトグル
+   ============================================================ */
 .theme-toggle {
     display: inline-flex;
     background-color: var(--container-bg);
@@ -648,6 +676,7 @@ h1 {
     align-items: center;
 }
 
+/* ラジオボタン本体は非表示(ラベル側で見た目を作る) */
 .theme-option input {
     appearance: none;
     position: absolute;
@@ -666,17 +695,21 @@ h1 {
     transition: background-color 0.2s, color 0.2s;
 }
 
+/* 選択中のオプションを強調表示 */
 .theme-option input:checked+span {
     background-color: var(--toggle-active-bg);
     color: var(--text-color-strong);
 }
 
-/* モーダルオーバーレイ */
+/* ============================================================
+   4. コンポーネント: ローディングモーダル
+   ============================================================ */
 .modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
+    /* 古いブラウザ用フォールバック */
     height: 100vh;
     height: 100dvh;
     background-color: rgba(0, 0, 0, 0.4);
@@ -690,6 +723,7 @@ h1 {
     transition: opacity 0.3s ease;
 }
 
+/* hidden クラスでフェードアウト(JSから付与) */
 .modal-overlay.hidden {
     opacity: 0;
     pointer-events: none;
@@ -735,7 +769,9 @@ h1 {
     }
 }
 
-/* モバイル向けレスポンシブ最適化 */
+/* ============================================================
+   5. レスポンシブ(モバイル最適化)
+   ============================================================ */
 @media (max-width: 600px) {
     body {
         padding: 12px;
