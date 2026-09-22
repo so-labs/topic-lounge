@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    Conversation Starter - スタイルシート
    構成:
      1. テーマ(カラーパレット)
@@ -96,6 +96,61 @@ body {
     flex-direction: column;
     align-items: center;
     gap: 20px;
+}
+
+/* 上部タブバー(ツール切り替え) */
+.app-tab-bar {
+    display: inline-flex;
+    background-color: var(--container-bg);
+    border-radius: 30px;
+    padding: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    gap: 4px;
+}
+
+.tab-btn {
+    appearance: none;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 22px;
+    font-size: 0.95em;
+    font-weight: bold;
+    font-family: inherit;
+    color: var(--text-color);
+    border-radius: 25px;
+    transition: background-color 0.2s, color 0.2s, transform 0.1s;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.tab-btn:hover {
+    color: var(--text-color-strong);
+}
+
+.tab-btn:active {
+    transform: scale(0.97);
+}
+
+.tab-btn.active {
+    background-color: var(--toggle-active-bg);
+    color: var(--text-color-strong);
+}
+
+/* 各タブのビューコンテナ */
+.tab-view {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.tab-view.hidden {
+    display: none !important;
 }
 
 /* メインの丸角カード */

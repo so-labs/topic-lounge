@@ -37,12 +37,26 @@
 
 <body>
     <div class="main-wrapper">
-        <div class="container">
-            <h1>お題生成</h1>
-            <button id="generateButton">生成！</button>
-            <p id="errorDisplay" class="error-message"></p>
-            <p id="ideaDisplay"></p>
-        </div>
+        <!-- 上部タブバー -->
+        <nav class="app-tab-bar" role="tablist" aria-label="機能切り替え">
+            <button type="button" class="tab-btn active" role="tab" id="tabTopics" aria-selected="true" aria-controls="viewTopics">お題生成</button>
+            <button type="button" class="tab-btn" role="tab" id="tabRelay" aria-selected="false" aria-controls="viewRelay">直前リレー小説</button>
+        </nav>
+
+        <!-- お題生成ビュー -->
+        <section id="viewTopics" class="tab-view active" role="tabpanel" aria-labelledby="tabTopics">
+            <div class="container">
+                <h1>お題生成</h1>
+                <button id="generateButton">生成！</button>
+                <p id="errorDisplay" class="error-message"></p>
+                <p id="ideaDisplay"></p>
+            </div>
+        </section>
+
+        <!-- 直前リレー小説ビュー -->
+        <section id="viewRelay" class="tab-view hidden" role="tabpanel" aria-labelledby="tabRelay">
+            <!-- Phase 3 で実装 -->
+        </section>
 
         <!-- テーマ切り替え -->
         <div class="theme-toggle-container">
