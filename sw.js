@@ -1,12 +1,12 @@
 /**
  * キャッシュバージョンの命名規則:
- * conversation-starter-YYYY.MM-rN
+ * topic-lounge-YYYY.MM-rN
  *
  * YYYY = 西暦
  * MM   = 月（01〜12）
  * rN   = その月のリリース回数
  */
-const CACHE_NAME = 'conversation-starter-2026.09-r7';
+const CACHE_NAME = 'topic-lounge-2026.09-r1';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

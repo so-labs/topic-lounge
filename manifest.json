@@ -1,7 +1,7 @@
 {
-  "name": "お題生成器",
-  "short_name": "お題生成器",
-  "description": "AIにお題を生成してもらうためのシンプルなWebアプリです。",
+  "name": "Topic Lounge",
+  "short_name": "Topic Lounge",
+  "description": "AIと一緒に会話のきっかけや物語を作る、AIラウンジ「Topic Lounge」",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#b45309",

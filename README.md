@@ -1,20 +1,33 @@
-﻿# 💬 お題生成器 (Conversation Starter)
+# 🛋️ Topic Lounge
 
 [![Demo](https://img.shields.io/badge/🚀%20Demo-Live-black?style=flat-square&logo=vercel)][demo]
 [![PWA](https://img.shields.io/badge/PWA-Ready-5A0FC8?style=flat-square&logo=pwa&logoColor=white)][demo]
 [![Gemini API](https://img.shields.io/badge/Gemini%20API-Powered-4285F4?style=flat-square&logo=google&logoColor=white)][gemini]
 [![License](https://img.shields.io/badge/License-MIT-22c55e?style=flat-square)][license]
 
-Gemini APIを活用した、会話のきっかけや雑談・アイスブレイクに使えるお題を素早く生成するWebアプリケーションです。
+Gemini APIを活用した、会話のきっかけや物語を生み出すAIラウンジです。上部タブで複数のAIツールを切り替えながら使えます。
 
 ---
 
 ## ✨ 1. 主な機能
 
-- **💡 お題の自動生成**: 「生成！」ボタンを押すだけで、思わず話したくなるユニークなトークテーマを瞬時に生成します。
+### 💡 お題生成
+
+- 「生成！」ボタンを押すだけで、思わず話したくなるユニークなトークテーマを瞬時に生成します。
 - **🔘 選択肢モード**: 「選択肢のみ」にチェックを入れることで、質問文と合わせてタップして選べる選択肢ボタン（複数択）を生成します。
 - **🎯 ワード指定機能**: 気になる単語やキーワード（最大10文字）を指定し、そのワードを取り入れたお題を生成できます。
-- **🤖 モデル選択**: 利用可能なGeminiモデル（Gemini Flash Lite等）を用途に合わせてプルダウンから選択可能です。
+
+### 📖 直前リレー小説
+
+- 人間とAIが交互に執筆する、一人用の短編リレー小説ツールです。
+- 最大10ターンで完結する物語を楽しめます。
+- 世界観・主人公設定を入力して開始し、AIが物語を自動的に展開・完結させます。
+- **LocalStorage自動保存**: リロードしても続きから再開可能。完結後は全文コピー機能あり。
+
+### 🤖 共通設定
+
+- 利用可能なGeminiモデルを用途に合わせてプルダウンから選択可能です。
+- 直前リレー小説では軽量モデルのみが選択できます。
 
 ---
 
@@ -35,13 +48,13 @@ Gemini APIを活用した、会話のきっかけや雑談・アイスブレイ�
 
 Service Worker (`sw.js`) で使用するキャッシュ名 (`CACHE_NAME`) は、以下の規則で運用しています。
 
-`conversation-starter-YYYY.MM-rN`
+`topic-lounge-YYYY.MM-rN`
 
 - **YYYY** = 西暦 (例: 2026)
 - **MM**   = 月 (01〜12)
 - **rN**   = その月のリリース回数 (例: r1, r2...)
 
-例: `conversation-starter-2026.09-r1`
+例: `topic-lounge-2026.09-r1`
 
 ファイルの追加やロジック修正などのリリースを行う際は、このバージョン文字列をインクリメント・更新することで、ブラウザに保存された古いキャッシュを安全に破棄し、新しい資産を確実に反映させます。
 
@@ -49,7 +62,7 @@ Service Worker (`sw.js`) で使用するキャッシュ名 (`CACHE_NAME`) は、
 
 ## 🚀 4. 自分でホストする方法
 
-本アプリはフロントエンド（静的ファイル）と、Gemini APIを呼び出すサーバーレス関数（`api/generate.js`）で構成されており、**Vercel Functionsの利用を前提**としています。そのため、`index.html` を単体で開いてもお題の生成機能（`/api/generate` 呼び出し）は動作しません。
+本アプリはフロントエンド（静的ファイル）と、Gemini APIを呼び出すサーバーレス関数（`api/generate.js`, `api/relay.js`）で構成されており、**Vercel Functionsの利用を前提**としています。そのため、`index.html` を単体で開いても生成機能は動作しません。
 
 ### 1) 事前準備
 
@@ -70,7 +83,7 @@ Service Worker (`sw.js`) で使用するキャッシュ名 (`CACHE_NAME`) は、
 
 ### 3) 環境変数の設定（必須）
 
-`api/generate.js` はサーバー側の環境変数 `GEMINI_API_KEY` を参照します。未設定の場合、生成ボタンを押すと「APIキーが設定されていません。」というエラーになります。
+`api/generate.js` および `api/relay.js` はサーバー側の環境変数 `GEMINI_API_KEY` を参照します。未設定の場合、生成ボタンを押すと「APIキーが設定されていません。」というエラーになります。
 
 **ローカル開発の場合**:
 
@@ -119,14 +132,14 @@ vercel link
 
 自分でホストする場合、以下のファイルを編集することで挙動を変更できます。
 
-### 5) `models.json`（モデル選択肢の変更）
+### 1) `models.json`（モデル選択肢の変更）
 
-トップの設定パネルに表示されるモデル一覧です。`group`（プルダウンのグループ名）ごとに `models` 配列を持ちます。
+トップの設定パネルに表示されるモデル一覧です。`group`（プルダウンのグループ名）ごとに `models` 配列を持ちます。`lightweight: true` を設定したモデルのみが、直前リレー小説で選択できます。
 
 > [!NOTE]
-> `models.json` はクライアント側（ブラウザ）では常に最新の内容がfetchされますが、サーバー側の `api/generate.js` はコールドスタート時（関数プロセス起動時）に一度だけ読み込んでホワイトリストを作ります。そのため、編集後は再起動をしないと、「プルダウンには出るのに生成しようとするとエラーになる」状態になります。
+> `models.json` はクライアント側（ブラウザ）では常に最新の内容がfetchされますが、サーバー側の `api/generate.js` および `api/relay.js` はコールドスタート時（関数プロセス起動時）に一度だけ読み込んでホワイトリストを作ります。そのため、編集後は再起動をしないと、「プルダウンには出るのに生成しようとするとエラーになる」状態になります。
 
-### 5) `api/prompts.json` / `api/questions.json`（生成の元ネタ）
+### 2) `api/prompts.json` / `api/questions.json`（お題生成の元ネタ）
 
 いずれもサーバー側（`api/generate.js`）でのみ使われ、ユーザーには直接表示されません。AIに渡すプロンプトの「お手本・方向性」として使われるものです。
 
@@ -140,7 +153,7 @@ vercel link
 <!-- defs -->
 
 <!-- external -->
-[demo]: https://conversation-starter-ten.vercel.app
+[demo]: https://topic-lounge.vercel.app
 [gemini]: https://ai.google.dev/
 
 <!-- internal -->
