@@ -1,6 +1,8 @@
-/* ============================================================
+﻿/* ============================================================
    直前リレー小説 (Relay Story) モジュール
    ============================================================ */
+
+import { showError, clearError } from './errorDisplay.js';
 
 export function initRelay() {
     const STORAGE_KEY = 'relay_story_state';
@@ -108,14 +110,15 @@ export function initRelay() {
         settingCount.textContent = '0 / 100';
         storyInput.value = '';
         inputCount.textContent = '0 / 500';
-        errorDisplay.textContent = '';
+        clearError(errorDisplay);
         render();
     }
 
     // 画面レンダリング
+    // ※ エラーメッセージのクリアは呼び出し側（各操作の開始時点）で行う。
+    //    ここで一律クリアすると、エラー発生後に呼ばれるrender()で
+    //    表示直後のエラーメッセージが消えてしまうため行わない。
     function render() {
-        errorDisplay.textContent = '';
-
         // 完結している場合
         if (state.isFinished) {
             setupView.classList.add('hidden');
@@ -228,12 +231,12 @@ export function initRelay() {
 
         const text = storyInput.value.trim();
         if (!text) {
-            errorDisplay.textContent = '物語の続きを入力してください。';
+            showError(errorDisplay, '物語の続きを入力してください。');
             storyInput.focus();
             return;
         }
 
-        errorDisplay.textContent = '';
+        clearError(errorDisplay);
         state.isLoading = true;
 
         state.history.push({
@@ -242,12 +245,23 @@ export function initRelay() {
             turn: state.turn
         });
 
+        state.turn += 1;
+
         storyInput.value = '';
         inputCount.textContent = '0 / 500';
         saveState();
         render();
 
         const selectedModel = (modelSelect && modelSelect.value) ? modelSelect.value : 'gemini-3.5-flash-lite';
+
+        // サーバー側のタイムアウト（25秒・リトライ込みで最大27秒程度）より
+        // 少し長めに取り、サーバーからの分かりやすいエラーメッセージを
+        // 優先しつつ、通信自体が固まった場合の保険として機能させる。
+        const RELAY_TIMEOUT_MS = 30000;
+        const abortController = new AbortController();
+        const timeoutId = setTimeout(() => {
+            abortController.abort();
+        }, RELAY_TIMEOUT_MS);
 
         try {
             const safeHistory = state.history.slice(-3).map(h => ({
@@ -265,7 +279,8 @@ export function initRelay() {
                     setting: state.setting,
                     turn: state.turn,
                     history: safeHistory
-                })
+                }),
+                signal: abortController.signal
             });
 
             const data = await response.json();
@@ -297,15 +312,20 @@ export function initRelay() {
 
         } catch (error) {
             console.error('[relay] 送信エラー:', error);
-            errorDisplay.textContent = error.message || '通信エラーが発生しました。もう一度お試しください。';
             state.isLoading = false;
             const lastEntry = state.history.pop();
             if (lastEntry && lastEntry.role === 'user') {
                 storyInput.value = lastEntry.content;
                 inputCount.textContent = `${lastEntry.content.length} / 500`;
+                state.turn -= 1;
             }
             saveState();
             render();
+            showError(errorDisplay, error, {
+                timeoutMessage: 'AIの応答がタイムアウトしました。混雑している可能性があるため、再度試すか別のモデルをお試しください。'
+            });
+        } finally {
+            clearTimeout(timeoutId);
         }
     }
 

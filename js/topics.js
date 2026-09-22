@@ -1,6 +1,8 @@
-/* ============================================================
+﻿/* ============================================================
    お題生成 (Topics) モジュール
    ============================================================ */
+
+import { showError, clearError } from './errorDisplay.js';
 
 export function initTopics() {
     const generateButton = document.getElementById('generateButton');
@@ -15,12 +17,12 @@ export function initTopics() {
     if (!generateButton || !ideaDisplay || !errorDisplay) return;
 
     generateButton.addEventListener('click', async () => {
-        errorDisplay.textContent = '';
+        clearError(errorDisplay);
         generateButton.disabled = true;
 
         const selectedModel = modelSelect ? modelSelect.value : '';
         if (!selectedModel) {
-            errorDisplay.textContent = 'モデルを選択してください。';
+            showError(errorDisplay, 'モデルを選択してください。');
             generateButton.disabled = false;
             return;
         }
@@ -31,7 +33,7 @@ export function initTopics() {
         if (customWordMode && customWordMode.checked) {
             word = (customWordInput.value || '').trim().slice(0, 10);
             if (!word) {
-                errorDisplay.textContent = 'ワードを入力してください（単語・最大10文字）';
+                showError(errorDisplay, 'ワードを入力してください（単語・最大10文字）');
                 generateButton.disabled = false;
                 return;
             }
@@ -79,16 +81,14 @@ export function initTopics() {
                 }
             } else {
                 ideaDisplay.textContent = '';
-                errorDisplay.textContent = '生成に失敗しました。';
+                showError(errorDisplay, '生成に失敗しました。');
             }
         } catch (error) {
             console.error('クライアントサイドでのエラー:', error);
             ideaDisplay.textContent = '';
-            if (error.name === 'AbortError' || error.name === 'TimeoutError') {
-                errorDisplay.textContent = '生成処理がタイムアウトしました（20秒）。混雑している可能性があるため、再度試すか別のモデルをお試しください。';
-            } else {
-                errorDisplay.textContent = error.message || '通信エラーが発生しました。';
-            }
+            showError(errorDisplay, error, {
+                timeoutMessage: '生成処理がタイムアウトしました（20秒）。混雑している可能性があるため、再度試すか別のモデルをお試しください。'
+            });
         } finally {
             clearTimeout(timeoutId);
             generateButton.disabled = false;
