@@ -78,24 +78,33 @@
 body {
     font-family: 'M PLUS Rounded 1c', sans-serif;
     display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
     /* 古いブラウザ用フォールバック */
     min-height: 100vh;
     min-height: 100dvh;
     margin: 0;
     background-color: var(--bg-color);
-    padding: 20px;
+    padding: 24px 20px;
     box-sizing: border-box;
 }
 
-/* ページ全体を中央寄せするラッパー */
+/* ページ全体を上部揃えで中央寄せするラッパー */
 .main-wrapper {
-    margin: auto;
+    margin: 0 auto;
     width: 100%;
     max-width: 860px;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 20px;
+    flex: 1;
+}
+
+.theme-toggle-container {
+    margin-top: auto;
+    padding-top: 10px;
 }
 
 /* 上部タブバー(ツール切り替え) */
@@ -199,6 +208,11 @@ body {
     clip: rect(0, 0, 0, 0) !important;
     white-space: nowrap !important;
     border: 0 !important;
+}
+
+/* 汎用非表示ユーティリティ */
+.hidden {
+    display: none !important;
 }
 
 /* ============================================================
@@ -1186,6 +1200,7 @@ h1 {
 
 /* ダークテーマ: OS設定(system)時 */
 @media (prefers-color-scheme: dark) {
+
     :root:not([data-theme="light"]) .relay-setting-group input,
     :root:not([data-theme="light"]) .relay-input-area textarea,
     :root:not([data-theme="light"]) .relay-full-story {

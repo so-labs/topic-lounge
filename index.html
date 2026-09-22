@@ -68,7 +68,8 @@
                     </p>
                     <div class="relay-setting-group">
                         <label for="relaySettingInput">共通設定・世界観（任意・最大100文字）</label>
-                        <input type="text" id="relaySettingInput" placeholder="例: 記憶をなくした猫と、雨の降らないサイバーパンク都市" maxlength="100">
+                        <input type="text" id="relaySettingInput" placeholder="例: 記憶をなくした猫と、雨の降らないサイバーパンク都市"
+                            maxlength="100">
                         <span class="char-counter" id="relaySettingCount">0 / 100</span>
                     </div>
                     <button id="relayStartBtn" class="primary-btn">物語を始める</button>
@@ -109,7 +110,8 @@
 
                     <!-- 入力エリア -->
                     <div class="relay-input-area" id="relayInputArea">
-                        <textarea id="relayStoryInput" placeholder="物語の始まりを書いてください..." rows="3" maxlength="500"></textarea>
+                        <textarea id="relayStoryInput" placeholder="物語の始まりを書いてください..." rows="3"
+                            maxlength="500"></textarea>
                         <div class="relay-input-footer">
                             <span class="char-counter" id="relayInputCount">0 / 500</span>
                             <button id="relaySubmitBtn" class="primary-btn">AIへ渡す</button>
@@ -247,7 +249,7 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script type="module" src="script.js"></script>
 </body>
 
 </html>

@@ -2,22 +2,67 @@
   {
     "group": "Gemini",
     "models": [
-      { "id": "gemini-3.8-flash", "name": "Gemini 3.8 Flash" },
-      { "id": "gemini-3.7-flash", "name": "Gemini 3.7 Flash" },
-      { "id": "gemini-3.6-flash", "name": "Gemini 3.6 Flash" },
-      { "id": "gemini-3.5-flash", "name": "Gemini 3.5 Flash" },
-      { "id": "gemini-3.5-flash-lite", "name": "Gemini 3.5 Flash Lite", "default": true },
-      { "id": "gemini-3.1-flash-lite", "name": "Gemini 3.1 Flash Lite" },
-      { "id": "gemini-3-flash", "name": "Gemini 3 Flash" },
-      { "id": "gemini-2.5-flash", "name": "Gemini 2.5 Flash" },
-      { "id": "gemini-2.5-flash-lite", "name": "Gemini 2.5 Flash Lite" }
+      {
+        "id": "gemini-3.8-flash",
+        "name": "Gemini 3.8 Flash",
+        "lightweight": false
+      },
+      {
+        "id": "gemini-3.7-flash",
+        "name": "Gemini 3.7 Flash",
+        "lightweight": false
+      },
+      {
+        "id": "gemini-3.6-flash",
+        "name": "Gemini 3.6 Flash",
+        "lightweight": false
+      },
+      {
+        "id": "gemini-3.5-flash",
+        "name": "Gemini 3.5 Flash",
+        "lightweight": false
+      },
+      {
+        "id": "gemini-3.5-flash-lite",
+        "name": "Gemini 3.5 Flash Lite",
+        "default": true,
+        "lightweight": true
+      },
+      {
+        "id": "gemini-3.1-flash-lite",
+        "name": "Gemini 3.1 Flash Lite",
+        "lightweight": true
+      },
+      {
+        "id": "gemini-3-flash",
+        "name": "Gemini 3 Flash",
+        "lightweight": false
+      },
+      {
+        "id": "gemini-2.5-flash",
+        "name": "Gemini 2.5 Flash",
+        "lightweight": false
+      },
+      {
+        "id": "gemini-2.5-flash-lite",
+        "name": "Gemini 2.5 Flash Lite",
+        "lightweight": true
+      }
     ]
   },
   {
     "group": "Gemma",
     "models": [
-      { "id": "gemma-4-26b-a4b-it", "name": "Gemma 4 26B" },
-      { "id": "gemma-4-31b-it", "name": "Gemma 4 31B" }
+      {
+        "id": "gemma-4-26b-a4b-it",
+        "name": "Gemma 4 26B",
+        "lightweight": false
+      },
+      {
+        "id": "gemma-4-31b-it",
+        "name": "Gemma 4 31B",
+        "lightweight": false
+      }
     ]
   }
 ]

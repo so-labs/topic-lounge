@@ -17,6 +17,7 @@ const API_KEY = process.env.GEMINI_API_KEY;
 
 // models.json から定義済みモデル一覧を読み込み（ホワイトリスト）
 let localValidModels = new Set();
+let localLightweightModels = new Set();
 try {
     const modelsConfig = readJsonFile(path.join(__dirname, "..", "models.json"));
     modelsConfig.forEach(group => {
@@ -24,6 +25,10 @@ try {
             if (m.id) {
                 localValidModels.add(m.id);
                 localValidModels.add(`models/${m.id}`);
+                if (m.lightweight) {
+                    localLightweightModels.add(m.id);
+                    localLightweightModels.add(`models/${m.id}`);
+                }
             }
         });
     });
@@ -31,22 +36,22 @@ try {
     console.warn("models.jsonの読み込みに失敗しました:", e.message);
 }
 
-// ターン数に応じた執筆方針を返す
+// ターン数に応じた執筆方針を返す (AIが担当するのは偶数ターン: 2, 4, 6, 8, 10)
 function getTurnGuidance(turn) {
     if (turn >= 10) {
-        return `【現在のターン: 第${turn}ターン（最終回・完結）】
-物語の最終回です。これまでの流れや直前の展開を受け止め、物語を美しく印象的に完結させてください。余韻の残るエンディングを描いてください。`;
+        return `【現在のターン: 第10ターン（最終回・完結）】
+物語の最終回です。これまでの流れや直前の展開を受け止め、物語を完全に終わらせてください。余韻の残るエンディングを描き、物語を綺麗に完結させてください。`;
     }
-    if (turn === 9) {
-        return `【現在のターン: 第9ターン（結末直前・クライマックス）】
-物語は結末直前です。次の第10ターンで完結できるよう、決定的な出来事や最後の布石を打ち、最高潮の盛り上がりを作ってください。`;
+    if (turn === 8) {
+        return `【現在のターン: 第8ターン（最後の展開・締め）】
+残るは人間の第9ターンと最終回（第10ターン）のみです。最後の展開としてかなり締めにかかってください。結末へ直結する重大な局面を描き、緊張感を最高潮に高めてください。`;
     }
-    if (turn >= 7) {
-        return `【現在のターン: 第${turn}ターン（終盤）】
-物語は終盤に入りました。これまでの展開を受け、クライマックスに向けて事態を収束・急展開させ、物語の緊張感を高めてください。`;
+    if (turn === 6) {
+        return `【現在のターン: 第6ターン（中盤・大展開）】
+物語の中盤の山場です。これまでの流れを踏まえつつ、物語を大きく動かす予想外の大きな展開を挟んで、物語をダイナミックに加速させてください。`;
     }
-    return `【現在のターン: 第${turn}ターン（序盤〜中盤）】
-物語は序盤〜中盤です。直前の展開を活かしつつ、読者がワクワクするような新たな出来事や変化、情景描写を盛り込んで展開を豊かに広げてください。`;
+    return `【現在のターン: 第${turn}ターン（序盤展開）】
+物語の序盤です。直前の展開を活かしつつ、読者がワクワクするような新たな出来事や変化、情景描写を盛り込んで展開を広げてください。`;
 }
 
 export default async function handler(request, response) {
@@ -68,10 +73,10 @@ export default async function handler(request, response) {
 
     console.log(`[relay] リクエスト受信: model=${selectedModel}, turn=${cleanTurn}, settingLength=${cleanSetting.length}`);
 
-    // models.json に定義されたモデル以外は一律拒否（完全ホワイトリスト検証）
-    if (!selectedModel || !localValidModels.has(selectedModel)) {
-        console.warn(`[relay] 許可されていないモデルの指定: ${selectedModel}`);
-        return response.status(400).json({ error: "無効なモデルが選択されました。" });
+    // models.json に定義された軽量モデル以外は拒否
+    if (!selectedModel || !localLightweightModels.has(selectedModel)) {
+        console.warn(`[relay] 許可されていないモデル（軽量モデル以外）の指定: ${selectedModel}`);
+        return response.status(400).json({ error: "直前リレー小説では軽量モデルのみ選択できます。" });
     }
 
     // APIキーがない場合はエラー
