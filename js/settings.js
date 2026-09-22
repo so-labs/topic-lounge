@@ -2,6 +2,8 @@
    設定パネル & モデル選択モジュール
    ============================================================ */
 
+import { getAppVersion } from './version.js';
+
 let currentIsRelay = false;
 let globalSelectCustomOption = null;
 
@@ -86,8 +88,16 @@ export function initSettings() {
 
     const customWordMode = document.getElementById('customWordMode');
     const customWordInput = document.getElementById('customWordInput');
+    const appVersionDisplay = document.getElementById('appVersionDisplay');
 
     if (!modelSelect || !settingsPanel) return;
+
+    // バージョン情報の取得と表示
+    if (appVersionDisplay) {
+        getAppVersion().then(version => {
+            appVersionDisplay.textContent = `Ver ${version}`;
+        });
+    }
 
     /* --- カスタムセレクト操作 --- */
     function openCustomSelect() {
