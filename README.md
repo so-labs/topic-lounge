@@ -1,4 +1,4 @@
-# 🛋️ Topic Lounge
+﻿# 🛋️ Topic Lounge
 
 [![Demo](https://img.shields.io/badge/🚀%20Demo-Live-black?style=flat-square&logo=vercel)][demo]
 [![PWA](https://img.shields.io/badge/PWA-Ready-5A0FC8?style=flat-square&logo=pwa&logoColor=white)][demo]
@@ -150,11 +150,17 @@ vercel link
   - AIへのfew-shotとして渡される質問サンプル集です。`choices` を持つ項目は「選択肢形式」、`answer_type: "text"` の項目は「自由記述形式」の例としてAIに提示されます。
   - ここに書いた質問がそのまま出力されるわけではなく、あくまで「こういう雰囲気のお題を作って」という参考例です。
 
-<!-- defs -->
+---
 
-<!-- external -->
+## 🤝 6. 開発・コントリビューションルール (AI / 人間 共通)
+
+本プロジェクトの開発における厳格なルール（アーキテクチャ、API制約、コミットルールなど）は、すべて **`AGENTS.md`** に一元化されています。
+
+> **⚠️ TO ALL AI AGENTS & ASSISTANTS**:
+>
+> Before generating or modifying any code in this project, you **MUST** read the **`AGENTS.md`** file located in the root directory and strictly follow all the rules defined within it. Do not proceed without reading it.
+
+<!-- defs -->
 [demo]: https://topic-lounge.vercel.app
 [gemini]: https://ai.google.dev/
-
-<!-- internal -->
 [license]: LICENSE
