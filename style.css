@@ -825,6 +825,366 @@ h1 {
 }
 
 /* ============================================================
+   4. コンポーネント: 直前リレー小説
+   ============================================================ */
+.relay-container {
+    padding: 36px 32px;
+    min-height: 520px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    text-align: left;
+    box-sizing: border-box;
+}
+
+.relay-panel {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    flex: 1;
+}
+
+.relay-panel.hidden {
+    display: none !important;
+}
+
+.relay-panel h1 {
+    text-align: center;
+    margin-bottom: 12px;
+}
+
+.relay-description {
+    text-align: center;
+    color: var(--text-color);
+    line-height: 1.8;
+    margin-bottom: 24px;
+}
+
+.relay-setting-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 24px;
+    position: relative;
+}
+
+.relay-setting-group label {
+    font-size: 0.95em;
+    font-weight: bold;
+    color: var(--text-color-strong);
+}
+
+.relay-setting-group input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 2px solid var(--input-border);
+    background-color: var(--input-bg);
+    color: var(--input-text);
+    font-size: 1em;
+    font-family: inherit;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.relay-setting-group input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(243, 156, 18, 0.2);
+}
+
+.char-counter {
+    font-size: 0.8em;
+    color: var(--text-color);
+    text-align: right;
+}
+
+.primary-btn {
+    font-family: inherit;
+    font-size: 1.1em;
+    font-weight: bold;
+    padding: 14px 28px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: transform 0.2s, background-color 0.2s, box-shadow 0.2s, opacity 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.primary-btn:hover:not(:disabled) {
+    transform: scale(1.03);
+    box-shadow: 0 4px 14px rgba(243, 156, 18, 0.35);
+}
+
+.primary-btn:active:not(:disabled) {
+    transform: scale(0.98);
+}
+
+.primary-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.relay-btn-secondary {
+    font-family: inherit;
+    font-size: 1em;
+    font-weight: bold;
+    padding: 12px 24px;
+    background-color: var(--choice-bg);
+    color: var(--choice-text);
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.15s;
+}
+
+.relay-btn-secondary:hover {
+    background-color: var(--input-border);
+}
+
+.relay-btn-text {
+    background: none;
+    border: none;
+    font-family: inherit;
+    font-size: 0.85em;
+    font-weight: bold;
+    color: var(--text-color);
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: color 0.2s;
+}
+
+.relay-btn-text:hover {
+    color: var(--text-color-strong);
+}
+
+/* 執筆ヘッダー & プログレス */
+.relay-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.relay-turn-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.relay-turn-badge {
+    background-color: var(--toggle-active-bg);
+    color: var(--text-color-strong);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.9em;
+    font-weight: bold;
+}
+
+.relay-turn-phase {
+    font-size: 0.85em;
+    color: var(--primary-color);
+    font-weight: bold;
+}
+
+.relay-progress-bar {
+    width: 100%;
+    height: 6px;
+    background-color: var(--choice-bg);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 14px;
+}
+
+.relay-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color), #e67e22);
+    transition: width 0.4s ease;
+}
+
+/* 共通設定バッジ */
+.relay-active-setting {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--input-bg);
+    border: 1px solid var(--input-border);
+    padding: 6px 12px;
+    border-radius: 10px;
+    font-size: 0.85em;
+    color: var(--text-color);
+    margin-bottom: 14px;
+}
+
+.relay-setting-tag {
+    background-color: var(--primary-color);
+    color: white;
+    font-size: 0.75em;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+/* ログ表示エリア */
+.relay-story-logs {
+    flex: 1;
+    max-height: 360px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 8px 4px;
+    margin-bottom: 14px;
+    scroll-behavior: smooth;
+}
+
+.relay-log-item {
+    display: flex;
+    flex-direction: column;
+    padding: 12px 16px;
+    border-radius: 14px;
+    position: relative;
+    line-height: 1.7;
+    font-size: 0.95em;
+    box-sizing: border-box;
+}
+
+.relay-log-item.user {
+    background-color: var(--input-bg);
+    border: 1.5px solid var(--input-border);
+    color: var(--text-color-strong);
+    border-bottom-right-radius: 4px;
+    align-self: flex-end;
+    max-width: 88%;
+}
+
+.relay-log-item.ai {
+    background-color: var(--choice-bg);
+    color: var(--choice-text);
+    border-bottom-left-radius: 4px;
+    align-self: flex-start;
+    max-width: 88%;
+}
+
+.relay-log-item.in-context {
+    box-shadow: 0 0 0 2px rgba(243, 156, 18, 0.4);
+}
+
+.relay-log-meta {
+    font-size: 0.75em;
+    font-weight: bold;
+    margin-bottom: 4px;
+    color: var(--text-color);
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.relay-context-badge {
+    color: var(--primary-color);
+    font-size: 0.9em;
+}
+
+/* 執筆中スピナー */
+.relay-loading-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px;
+    color: var(--primary-color);
+    font-weight: bold;
+    font-size: 0.9em;
+}
+
+.relay-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(243, 156, 18, 0.3);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+/* 入力エリア */
+.relay-input-area {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: auto;
+}
+
+.relay-input-area textarea {
+    width: 100%;
+    box-sizing: border-box;
+    resize: vertical;
+    min-height: 80px;
+    padding: 12px;
+    border-radius: 12px;
+    border: 2px solid var(--input-border);
+    background-color: var(--input-bg);
+    color: var(--input-text);
+    font-family: inherit;
+    font-size: 0.95em;
+    line-height: 1.6;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.relay-input-area textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(243, 156, 18, 0.2);
+}
+
+.relay-input-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* 完結画面 */
+.relay-finish-header {
+    text-align: center;
+    margin-bottom: 16px;
+}
+
+.relay-finish-icon {
+    font-size: 2.5em;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.relay-full-story {
+    background-color: var(--input-bg);
+    border: 2px solid var(--input-border);
+    border-radius: 16px;
+    padding: 20px;
+    max-height: 380px;
+    overflow-y: auto;
+    text-align: left;
+    line-height: 1.9;
+    font-size: 1em;
+    color: var(--text-color-strong);
+    white-space: pre-wrap;
+    margin-bottom: 20px;
+}
+
+.relay-finish-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* ============================================================
    5. レスポンシブ(モバイル最適化)
    ============================================================ */
 @media (max-width: 600px) {
@@ -837,6 +1197,21 @@ h1 {
         border-radius: 18px;
         min-height: auto;
         display: block;
+    }
+
+    .relay-container {
+        display: flex;
+        padding: 20px 14px;
+        min-height: calc(100dvh - 120px);
+    }
+
+    .relay-log-item.user,
+    .relay-log-item.ai {
+        max-width: 95%;
+    }
+
+    .relay-story-logs {
+        max-height: 280px;
     }
 
     h1 {

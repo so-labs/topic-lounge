@@ -57,7 +57,84 @@
 
         <!-- 直前リレー小説ビュー -->
         <section id="viewRelay" class="tab-view hidden" role="tabpanel" aria-labelledby="tabRelay">
-            <!-- Phase 3 で実装 -->
+            <div class="container relay-container">
+                <!-- 1. 初期設定画面 -->
+                <div id="relaySetupView" class="relay-panel">
+                    <h1>直前リレー小説</h1>
+                    <p class="relay-description">
+                        人間とAIが交互に執筆し、全10ターンで物語を紡ぎます。<br>
+                        AIが覚えているのは<strong>「直前3ターン」</strong>だけ。<br>
+                        思わぬズレや化学反応を楽しみましょう！
+                    </p>
+                    <div class="relay-setting-group">
+                        <label for="relaySettingInput">共通設定・世界観（任意・最大100文字）</label>
+                        <input type="text" id="relaySettingInput" placeholder="例: 記憶をなくした猫と、雨の降らないサイバーパンク都市" maxlength="100">
+                        <span class="char-counter" id="relaySettingCount">0 / 100</span>
+                    </div>
+                    <button id="relayStartBtn" class="primary-btn">物語を始める</button>
+                </div>
+
+                <!-- 2. 執筆画面 -->
+                <div id="relayStoryView" class="relay-panel hidden">
+                    <div class="relay-header">
+                        <div class="relay-turn-info">
+                            <span class="relay-turn-badge">ターン <span id="relayCurrentTurn">1</span> / 10</span>
+                            <span id="relayTurnPhase" class="relay-turn-phase">序盤</span>
+                        </div>
+                        <button type="button" id="relayResetBtn" class="relay-btn-text">最初からやり直す</button>
+                    </div>
+
+                    <div class="relay-progress-bar" aria-hidden="true">
+                        <div class="relay-progress-fill" id="relayProgressFill" style="width: 10%;"></div>
+                    </div>
+
+                    <div id="relayActiveSetting" class="relay-active-setting hidden">
+                        <span class="relay-setting-tag">世界観</span>
+                        <span id="relayActiveSettingText"></span>
+                    </div>
+
+                    <!-- 過去ログエリア -->
+                    <div class="relay-story-logs" id="relayStoryLogs">
+                        <!-- 動的生成ログ -->
+                    </div>
+
+                    <!-- AI執筆中アニメーション -->
+                    <div id="relayLoadingIndicator" class="relay-loading-indicator hidden">
+                        <div class="relay-spinner"></div>
+                        <span>AIが物語の続きを執筆中...</span>
+                    </div>
+
+                    <!-- エラー表示 -->
+                    <p id="relayErrorDisplay" class="error-message"></p>
+
+                    <!-- 入力エリア -->
+                    <div class="relay-input-area" id="relayInputArea">
+                        <textarea id="relayStoryInput" placeholder="物語の始まりを書いてください..." rows="3" maxlength="500"></textarea>
+                        <div class="relay-input-footer">
+                            <span class="char-counter" id="relayInputCount">0 / 500</span>
+                            <button id="relaySubmitBtn" class="primary-btn">AIへ渡す</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. 完結画面 -->
+                <div id="relayFinishView" class="relay-panel hidden">
+                    <div class="relay-finish-header">
+                        <span class="relay-finish-icon">🎉</span>
+                        <h1>物語が完結しました！</h1>
+                        <p>10ターンのリレーを完走しました。完成した物語を振り返ってみましょう。</p>
+                    </div>
+
+                    <div class="relay-full-story" id="relayFullStory">
+                        <!-- 完成した物語の全文 -->
+                    </div>
+
+                    <div class="relay-finish-actions">
+                        <button id="relayCopyBtn" class="primary-btn">全文をコピー</button>
+                        <button id="relayRestartBtn" class="relay-btn-secondary">新しい物語を始める</button>
+                    </div>
+                </div>
+            </div>
         </section>
 
         <!-- テーマ切り替え -->
