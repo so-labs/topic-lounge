@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    設定パネル & モデル選択モジュール
    ============================================================ */
 
@@ -34,7 +34,15 @@ export function filterModels(isRelay) {
         group.classList.toggle('hidden', visibleOptions.length === 0);
     });
 
-    // 3. ネイティブ <select> の option/optgroup も同期
+    // 3. 個別設定エリアの切り替え
+    const settingsTopics = document.getElementById('settingsTopics');
+    const settingsRelay = document.getElementById('settingsRelay');
+    if (settingsTopics && settingsRelay) {
+        settingsTopics.classList.toggle('hidden', isRelay);
+        settingsRelay.classList.toggle('hidden', !isRelay);
+    }
+
+    // 4. ネイティブ <select> の option/optgroup も同期
     Array.from(modelSelect.options).forEach(opt => {
         const isLightweight = opt.getAttribute('data-lightweight') === 'true';
         const shouldHide = isRelay && !isLightweight;
@@ -47,7 +55,7 @@ export function filterModels(isRelay) {
         group.hidden = visibleOpts.length === 0;
     });
 
-    // 4. 現在選択中のモデルが非表示になった場合、表示中の最初の有効な軽量モデルに切り替える
+    // 5. 現在選択中のモデルが非表示になった場合、表示中の最初の有効な軽量モデルに切り替える
     if (isRelay && currentSelectedIsHidden) {
         const firstValidCustom = customSelectDropdown.querySelector('.custom-select-option:not(.hidden)');
         if (firstValidCustom && globalSelectCustomOption) {

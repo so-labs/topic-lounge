@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    Conversation Starter - スタイルシート
    構成:
      1. テーマ(カラーパレット)
@@ -701,6 +701,40 @@ h1 {
     display: flex;
     flex-direction: column;
     gap: 12px;
+}
+
+/* 機能別設定のグループ分け */
+.feature-settings,
+.common-settings {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.feature-settings.hidden {
+    display: none;
+}
+
+.settings-group-title {
+    font-size: 0.8em;
+    font-weight: 700;
+    color: var(--primary-color);
+    letter-spacing: 0.05em;
+    margin-bottom: 2px;
+}
+
+.settings-divider {
+    border: none;
+    border-top: 1px dashed var(--input-border);
+    margin: 4px 0;
+    width: 100%;
+}
+
+.settings-empty-text {
+    font-size: 0.85em;
+    color: var(--text-color);
+    margin: 0;
+    padding: 4px 0;
 }
 
 /* パネル内では余白を詰めて縦積みにする */

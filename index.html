@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ja">
 
 <head>
@@ -211,30 +211,48 @@
             </button>
         </div>
         <div class="settings-panel-body">
-            <div class="mode-select-container">
-                <label><input type="checkbox" id="choiceOnly"> 選択肢のみ</label>
+            <!-- 個別設定（お題生成用） -->
+            <div id="settingsTopics" class="feature-settings">
+                <div class="settings-group-title">お題生成の設定</div>
+                <div class="mode-select-container">
+                    <label><input type="checkbox" id="choiceOnly"> 選択肢のみ</label>
+                </div>
+                <div class="custom-word-container">
+                    <label><input type="checkbox" id="customWordMode"> ワード指定</label>
+                    <input type="text" id="customWordInput" placeholder="単語・最大10文字" maxlength="10" disabled>
+                </div>
             </div>
-            <div class="custom-word-container">
-                <label><input type="checkbox" id="customWordMode"> ワード指定</label>
-                <input type="text" id="customWordInput" placeholder="単語・最大10文字" maxlength="10" disabled>
+
+            <!-- 個別設定（直前リレー小説用） -->
+            <div id="settingsRelay" class="feature-settings hidden">
+                <div class="settings-group-title">直前リレー小説の設定</div>
+                <p class="settings-empty-text">個別設定はありません</p>
             </div>
-            <div class="model-select-container">
-                <label id="modelSelectLabel" for="customSelectTrigger">モデルを選択:</label>
-                <div class="custom-select-wrapper" id="customSelectWrapper">
-                    <select id="modelSelect" class="visually-hidden" tabindex="-1" aria-hidden="true">
-                        <option value="" disabled selected>モデル読み込み中...</option>
-                    </select>
-                    <button type="button" id="customSelectTrigger" class="custom-select-trigger" aria-haspopup="listbox"
-                        aria-expanded="false" aria-labelledby="modelSelectLabel customSelectValue">
-                        <span id="customSelectValue" class="custom-select-value">モデル読み込み中...</span>
-                        <svg class="custom-select-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="6 9 12 15 18 9"></polyline>
-                        </svg>
-                    </button>
-                    <div id="customSelectDropdown" class="custom-select-dropdown" role="listbox"
-                        aria-labelledby="modelSelectLabel" tabindex="-1">
-                        <!-- JSで動的にオプションを生成 -->
+
+            <hr class="settings-divider">
+
+            <!-- 共通設定 -->
+            <div class="common-settings">
+                <div class="settings-group-title">共通設定</div>
+                <div class="model-select-container">
+                    <label id="modelSelectLabel" for="customSelectTrigger">モデルを選択:</label>
+                    <div class="custom-select-wrapper" id="customSelectWrapper">
+                        <select id="modelSelect" class="visually-hidden" tabindex="-1" aria-hidden="true">
+                            <option value="" disabled selected>モデル読み込み中...</option>
+                        </select>
+                        <button type="button" id="customSelectTrigger" class="custom-select-trigger"
+                            aria-haspopup="listbox" aria-expanded="false"
+                            aria-labelledby="modelSelectLabel customSelectValue">
+                            <span id="customSelectValue" class="custom-select-value">モデル読み込み中...</span>
+                            <svg class="custom-select-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </button>
+                        <div id="customSelectDropdown" class="custom-select-dropdown" role="listbox"
+                            aria-labelledby="modelSelectLabel" tabindex="-1">
+                            <!-- JSで動的にオプションを生成 -->
+                        </div>
                     </div>
                 </div>
             </div>
