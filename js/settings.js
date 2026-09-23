@@ -8,7 +8,17 @@ let currentIsRelay = false;
 let globalSelectCustomOption = null;
 
 // タブ切り替え時にモデル選択の表示を切り替える
-export function filterModels(isRelay) {
+// target: 'home' | 'topics' | 'relay' または旧来の boolean (true=relay, false=topics)
+export function filterModels(target) {
+    let isRelay = false;
+    let isHome = false;
+    if (typeof target === 'string') {
+        isRelay = target === 'relay';
+        isHome = target === 'home';
+    } else {
+        isRelay = !!target;
+        isHome = false;
+    }
     currentIsRelay = isRelay;
     const modelSelect = document.getElementById('modelSelect');
     const customSelectDropdown = document.getElementById('customSelectDropdown');
@@ -36,12 +46,39 @@ export function filterModels(isRelay) {
         group.classList.toggle('hidden', visibleOptions.length === 0);
     });
 
-    // 3. 個別設定エリアの切り替え
-    const settingsTopics = document.getElementById('settingsTopics');
-    const settingsRelay = document.getElementById('settingsRelay');
-    if (settingsTopics && settingsRelay) {
-        settingsTopics.classList.toggle('hidden', isRelay);
-        settingsRelay.classList.toggle('hidden', !isRelay);
+    // 3. 個別設定エリアの切り替え（拡張性重視: 将来 feature-settings が増えても対応可能）
+    // 全ての feature-settings を一旦非表示にし、ターゲットに対応するものだけを表示する
+    const featureSettingsEls = document.querySelectorAll('.feature-settings');
+    featureSettingsEls.forEach(el => el.classList.add('hidden'));
+    if (!isHome) {
+        if (typeof target === 'string') {
+            // ターゲット名から期待されるIDを推測（例: 'topics' -> 'settingsTopics', 'relay' -> 'settingsRelay'）
+            const expectedId = `settings${target.charAt(0).toUpperCase()}${target.slice(1)}`;
+            const expectedEl = document.getElementById(expectedId);
+            if (expectedEl) {
+                expectedEl.classList.remove('hidden');
+            } else {
+                // 命名規則に合わない場合のフォールバック
+                const settingsTopics = document.getElementById('settingsTopics');
+                const settingsRelay = document.getElementById('settingsRelay');
+                if (target === 'topics' && settingsTopics) settingsTopics.classList.remove('hidden');
+                else if (target === 'relay' && settingsRelay) settingsRelay.classList.remove('hidden');
+            }
+        } else {
+            // 旧来の boolean 呼び出し互換
+            const settingsTopics = document.getElementById('settingsTopics');
+            const settingsRelay = document.getElementById('settingsRelay');
+            if (isRelay && settingsRelay) settingsRelay.classList.remove('hidden');
+            else if (!isRelay && settingsTopics) settingsTopics.classList.remove('hidden');
+        }
+    }
+
+    // 3b. 区切り線の表示制御: 個別設定が1つも表示されていない場合は区切り線も非表示
+    const settingsPanelEl = document.getElementById('settingsPanel');
+    const dividerEl = settingsPanelEl ? settingsPanelEl.querySelector('.settings-divider') : null;
+    if (dividerEl) {
+        const anyFeatureVisible = document.querySelectorAll('.feature-settings:not(.hidden)').length > 0;
+        dividerEl.classList.toggle('hidden', !anyFeatureVisible);
     }
 
     // 4. ネイティブ <select> の option/optgroup も同期
@@ -286,8 +323,13 @@ export function initSettings() {
             });
 
             // 現在のURLハッシュに応じた初期フィルタリング
-            const isInitialRelay = window.location.hash.replace(/^#\/?/, '').toLowerCase() === 'relay';
-            filterModels(isInitialRelay);
+            const rawHash = window.location.hash.replace(/^#\/?/, '').toLowerCase();
+            let initialTarget = 'home';
+            if (rawHash === 'relay') initialTarget = 'relay';
+            else if (rawHash === 'topics') initialTarget = 'topics';
+            else if (rawHash === 'home' || rawHash === '') initialTarget = 'home';
+            else initialTarget = 'topics';
+            filterModels(initialTarget);
 
         } catch (error) {
             console.error('モデル一覧の取得に失敗しました:', error);

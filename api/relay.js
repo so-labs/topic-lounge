@@ -65,13 +65,15 @@ export default async function handler(request, response) {
         model: selectedModel,
         setting = '',
         turn = 1,
-        history = []
+        history = [],
+        keepTurns = 3
     } = request.body || {};
 
     const cleanTurn = Math.max(1, Math.min(10, parseInt(turn, 10) || 1));
     const cleanSetting = String(setting || '').trim().slice(0, 100);
+    const cleanKeepTurns = Math.max(2, Math.min(4, parseInt(keepTurns, 10) || 3));
 
-    console.log(`[relay] リクエスト受信: model=${selectedModel}, turn=${cleanTurn}, settingLength=${cleanSetting.length}`);
+    console.log(`[relay] リクエスト受信: model=${selectedModel}, turn=${cleanTurn}, keepTurns=${cleanKeepTurns}, settingLength=${cleanSetting.length}`);
 
     // models.json に定義された軽量モデル以外は拒否
     if (!selectedModel || !localLightweightModels.has(selectedModel)) {
@@ -85,8 +87,8 @@ export default async function handler(request, response) {
         return response.status(500).json({ error: "APIキーが設定されていません。" });
     }
 
-    // 直前最大3ターンの履歴のみを抽出（直前2つ前のユーザー、1つ前のAI、直前のユーザー）
-    const safeHistory = Array.isArray(history) ? history.slice(-3) : [];
+    // 直前Nターンの履歴のみを抽出（Nは keepTurns: 2~4, デフォルト3）
+    const safeHistory = Array.isArray(history) ? history.slice(-cleanKeepTurns) : [];
     const formattedHistory = safeHistory.map(item => {
         const roleName = item.role === 'user' ? '人間' : 'AI';
         const content = String(item.content || '').trim().slice(0, 500);
@@ -101,7 +103,7 @@ export default async function handler(request, response) {
 ${cleanSetting ? `【共通設定（世界観・主人公など）】\n${cleanSetting}\n` : ''}
 ${turnGuidance}
 
-【直前までの流れ（直近3エピソード）】
+【直前までの流れ（直近${cleanKeepTurns}エピソード）】
 ${formattedHistory ? formattedHistory : '（物語の開始です）'}
 
 【執筆ルール】

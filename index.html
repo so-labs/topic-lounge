@@ -39,16 +39,44 @@
     <div class="main-wrapper">
         <!-- 上部タブバー -->
         <nav class="app-tab-bar" role="tablist" aria-label="機能切り替え">
-            <button type="button" class="tab-btn active" role="tab" id="tabTopics" aria-selected="true"
+            <button type="button" class="tab-btn active" role="tab" id="tabHome" aria-selected="true"
+                aria-controls="viewHome">ホーム</button>
+            <button type="button" class="tab-btn" role="tab" id="tabTopics" aria-selected="false"
                 aria-controls="viewTopics">お題生成</button>
             <button type="button" class="tab-btn" role="tab" id="tabRelay" aria-selected="false"
                 aria-controls="viewRelay">直前リレー小説</button>
         </nav>
 
+        <!-- ホームビュー -->
+        <section id="viewHome" class="tab-view active" role="tabpanel" aria-labelledby="tabHome">
+            <div class="container home-container">
+                <h1>Topic Lounge</h1>
+                <p class="home-lead">AIと一緒に会話や物語を楽しむラウンジです。<br>使いたいツールを選んでください。</p>
+                <div class="home-cards">
+                    <button type="button" class="home-card" id="homeCardTopics" aria-label="お題生成へ移動">
+                        <span class="home-card-icon" aria-hidden="true">💡</span>
+                        <h2>お題生成</h2>
+                        <p>ボタンを押すだけで、思わず話したくなるユニークなトークテーマを生成。選択肢モードやワード指定でカスタマイズもできます。</p>
+                        <span class="home-card-cta">お題を作る →</span>
+                    </button>
+                    <button type="button" class="home-card" id="homeCardRelay" aria-label="直前リレー小説へ移動">
+                        <span class="home-card-icon" aria-hidden="true">📖</span>
+                        <h2>直前リレー小説</h2>
+                        <p>人間とAIが交互に執筆し、全10ターンで物語を紡ぎます。AIが覚えているのは直前の数ターンだけ。思わぬズレや化学反応を楽しもう！</p>
+                        <span class="home-card-cta">物語を始める →</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
         <!-- お題生成ビュー -->
-        <section id="viewTopics" class="tab-view active" role="tabpanel" aria-labelledby="tabTopics">
+        <section id="viewTopics" class="tab-view hidden" role="tabpanel" aria-labelledby="tabTopics">
             <div class="container">
                 <h1>お題生成</h1>
+                <p class="topics-description">
+                    ボタンを押すだけで、思わず話したくなるユニークなトークテーマを生成します。<br>
+                    選択肢モードやワード指定で、自分好みにカスタマイズできます。
+                </p>
                 <button id="generateButton">生成！</button>
                 <p id="errorDisplay" class="error-message"></p>
                 <p id="ideaDisplay"></p>
@@ -63,11 +91,11 @@
                     <h1>直前リレー小説</h1>
                     <p class="relay-description">
                         人間とAIが交互に執筆し、全10ターンで物語を紡ぎます。<br>
-                        AIが覚えているのは<strong>「直前3ターン」</strong>だけ。<br>
+                        AIが覚えているのは<strong>「直前<span id="relayMemoryDisplay">3</span>ターン」</strong>だけ。<br>
                         思わぬズレや化学反応を楽しみましょう！
                     </p>
                     <div class="relay-setting-group">
-                        <label for="relaySettingInput">共通設定・世界観（任意・最大100文字）</label>
+                        <label for="relaySettingInput">共通設定・世界観（最大100文字）</label>
                         <input type="text" id="relaySettingInput" placeholder="例: 記憶をなくした猫と、雨の降らないサイバーパンク都市"
                             maxlength="100">
                         <span class="char-counter" id="relaySettingCount">0 / 100</span>
@@ -116,6 +144,12 @@
                             <span class="char-counter" id="relayInputCount">0 / 500</span>
                             <button id="relaySubmitBtn" class="primary-btn">AIへ渡す</button>
                         </div>
+                    </div>
+
+                    <!-- 完結後のコピー画面遷移エリア（10ターン完了時に表示） -->
+                    <div id="relayCompleteActions" class="relay-complete-actions hidden">
+                        <p class="relay-complete-message">🎉 10ターン完走！物語が完結しました。</p>
+                        <button id="relayGoToFinishBtn" class="primary-btn">完成した物語を見る</button>
                     </div>
                 </div>
 
@@ -226,7 +260,14 @@
             <!-- 個別設定（直前リレー小説用） -->
             <div id="settingsRelay" class="feature-settings hidden">
                 <div class="settings-group-title">直前リレー小説の設定</div>
-                <p class="settings-empty-text">個別設定はありません</p>
+                <div class="memory-select-container">
+                    <label for="relayMemorySelect">AIが覚えているターン数:</label>
+                    <select id="relayMemorySelect" class="relay-memory-select">
+                        <option value="2">2ターン</option>
+                        <option value="3">3ターン</option>
+                        <option value="4">4ターン</option>
+                    </select>
+                </div>
             </div>
 
             <hr class="settings-divider">
