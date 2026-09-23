@@ -22,8 +22,10 @@ function resolveErrorMessage(error, options = {}) {
     return (error && error.message) || fallbackMessage;
 }
 
+let errorTimeoutId = null;
+
 /**
- * 指定した要素にエラーメッセージを表示する。
+ * 指定した要素にエラーメッセージをポップアップ表示する。
  * @param {HTMLElement} element - エラーメッセージを表示する要素
  * @param {Error|string} error - 表示するエラー（文字列を直接渡した場合はそのまま表示）
  * @param {Object} [options]
@@ -35,17 +37,34 @@ export function showError(element, error, options = {}) {
 
     if (typeof error === 'string') {
         element.textContent = error;
-        return;
+    } else {
+        element.textContent = resolveErrorMessage(error, options);
     }
-
-    element.textContent = resolveErrorMessage(error, options);
+    
+    element.classList.add('show-toast');
+    
+    if (errorTimeoutId) {
+        clearTimeout(errorTimeoutId);
+    }
+    
+    // 5秒後に自動的に閉じる
+    errorTimeoutId = setTimeout(() => {
+        clearError(element);
+    }, 5000);
 }
 
 /**
- * 指定した要素のエラー表示をクリアする。
+ * 指定した要素のエラー表示をクリア（非表示）する。
  * @param {HTMLElement} element
  */
 export function clearError(element) {
     if (!element) return;
-    element.textContent = '';
+    element.classList.remove('show-toast');
+    
+    // アニメーション完了後にテキストをクリア
+    setTimeout(() => {
+        if (!element.classList.contains('show-toast')) {
+            element.textContent = '';
+        }
+    }, 300);
 }

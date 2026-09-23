@@ -81,6 +81,12 @@ export function filterModels(target) {
         dividerEl.classList.toggle('hidden', !anyFeatureVisible);
     }
 
+    // 3c. バージョン情報の表示制御 (ホームのみ表示)
+    const appVersionContainer = document.getElementById('appVersionContainer');
+    if (appVersionContainer) {
+        appVersionContainer.classList.toggle('hidden', !isHome);
+    }
+
     // 4. ネイティブ <select> の option/optgroup も同期
     Array.from(modelSelect.options).forEach(opt => {
         const isLightweight = opt.getAttribute('data-lightweight') === 'true';
