@@ -335,10 +335,8 @@ export function initRelay() {
 
         const selectedModel = (modelSelect && modelSelect.value) ? modelSelect.value : 'gemini-3.5-flash-lite';
 
-        // サーバー側のタイムアウト（25秒・リトライ込みで最大27秒程度）より
-        // 少し長めに取り、サーバーからの分かりやすいエラーメッセージを
-        // 優先しつつ、通信自体が固まった場合の保険として機能させる。
-        const RELAY_TIMEOUT_MS = 30000;
+        // サーバー側のタイムアウトより少し長めに取り、サーバーからの分かりやすいエラーメッセージを優先しつつ、通信自体が固まった場合の保険として機能させる。
+        const RELAY_TIMEOUT_MS = 100000;
         const abortController = new AbortController();
         const timeoutId = setTimeout(() => {
             abortController.abort();

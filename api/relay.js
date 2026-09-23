@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "@google/genai";
+﻿import { GoogleGenAI } from "@google/genai";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -16,19 +16,14 @@ const readJsonFile = (filePath) => {
 const API_KEY = process.env.GEMINI_API_KEY;
 
 // models.json から定義済みモデル一覧を読み込み（ホワイトリスト）
-let localValidModels = new Set();
-let localLightweightModels = new Set();
+let localValidModels = new Map();
 try {
     const modelsConfig = readJsonFile(path.join(__dirname, "..", "models.json"));
     modelsConfig.forEach(group => {
         group.models?.forEach(m => {
             if (m.id) {
-                localValidModels.add(m.id);
-                localValidModels.add(`models/${m.id}`);
-                if (m.lightweight) {
-                    localLightweightModels.add(m.id);
-                    localLightweightModels.add(`models/${m.id}`);
-                }
+                localValidModels.set(m.id, m);
+                localValidModels.set(`models/${m.id}`, m);
             }
         });
     });
@@ -76,7 +71,8 @@ export default async function handler(request, response) {
     console.log(`[relay] リクエスト受信: model=${selectedModel}, turn=${cleanTurn}, keepTurns=${cleanKeepTurns}, settingLength=${cleanSetting.length}`);
 
     // models.json に定義された軽量モデル以外は拒否
-    if (!selectedModel || !localLightweightModels.has(selectedModel)) {
+    const modelInfo = localValidModels.get(selectedModel);
+    if (!selectedModel || !modelInfo || !modelInfo.lightweight) {
         console.warn(`[relay] 許可されていないモデル（軽量モデル以外）の指定: ${selectedModel}`);
         return response.status(400).json({ error: "直前リレー小説では軽量モデルのみ選択できます。" });
     }
@@ -125,7 +121,7 @@ ${formattedHistory ? formattedHistory : '（物語の開始です）'}
         }
 
         const client = new GoogleGenAI({ apiKey: API_KEY });
-        const API_TIMEOUT_MS = 25000; // 25秒タイムアウト
+        const API_TIMEOUT_MS = modelInfo.timeout || 25000;
 
         let result;
         const maxRetries = 1;

@@ -45,10 +45,12 @@ export function initTopics() {
 
         loadingModal.classList.remove('hidden');
 
+        // サーバー側のタイムアウトより少し長めに取り、サーバーからの分かりやすいエラーメッセージを優先しつつ、通信自体が固まった場合の保険として機能させる。
+        const RELAY_TIMEOUT_MS = 100000;
         const abortController = new AbortController();
         const timeoutId = setTimeout(() => {
             abortController.abort();
-        }, 20000);
+        }, RELAY_TIMEOUT_MS);
 
         try {
             const response = await fetch('/api/generate', {
@@ -87,7 +89,7 @@ export function initTopics() {
             console.error('クライアントサイドでのエラー:', error);
             ideaDisplay.textContent = '';
             showError(errorDisplay, error, {
-                timeoutMessage: '生成処理がタイムアウトしました（20秒）。混雑している可能性があるため、再度試すか別のモデルをお試しください。'
+                timeoutMessage: '生成処理がタイムアウトしました。混雑しているか処理の重いモデルの可能性があるため、再度試すか別のモデルをお試しください。'
             });
         } finally {
             clearTimeout(timeoutId);

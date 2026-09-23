@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "@google/genai";
+﻿import { GoogleGenAI } from "@google/genai";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -21,14 +21,14 @@ const ngWords = readJsonFile(path.join(__dirname, "..", "node_modules", "naughty
 const API_KEY = process.env.GEMINI_API_KEY;
 
 // models.json から定義済みモデル一覧を読み込み（ホワイトリスト）
-let localValidModels = new Set();
+let localValidModels = new Map();
 try {
     const modelsConfig = readJsonFile(path.join(__dirname, "..", "models.json"));
     modelsConfig.forEach(group => {
         group.models?.forEach(m => {
             if (m.id) {
-                localValidModels.add(m.id);
-                localValidModels.add(`models/${m.id}`);
+                localValidModels.set(m.id, m);
+                localValidModels.set(`models/${m.id}`, m);
             }
         });
     });
@@ -62,7 +62,8 @@ export default async function handler(request, response) {
     }
 
     // models.json に定義されたモデル以外は一律拒否（完全ホワイトリスト検証）
-    if (!selectedModel || !localValidModels.has(selectedModel)) {
+    const modelInfo = localValidModels.get(selectedModel);
+    if (!selectedModel || !modelInfo) {
         console.warn(`[generate] 許可されていないモデルの指定: ${selectedModel}`);
         return response.status(400).json({ error: "無効なモデルが選択されました。" });
     }
@@ -191,7 +192,7 @@ export default async function handler(request, response) {
         }
 
         const client = new GoogleGenAI({ apiKey: API_KEY });
-        const API_TIMEOUT_MS = 20000; // 20秒タイムアウト
+        const API_TIMEOUT_MS = modelInfo.timeout || 20000;
 
         let result;
         const maxRetries = 1;
@@ -274,7 +275,7 @@ export default async function handler(request, response) {
 
         if (error.name === "TimeoutError") {
             return response.status(504).json({
-                error: "AIモデルの応答が20秒以内に完了しませんでした（タイムアウト）。混雑している可能性があるため、再度試すか別のモデルをお選びください。"
+                error: "AIモデルの応答がタイムアウトしました。混雑しているか処理の重いモデルの可能性があるため、再度試すか別のモデルをお選びください。"
             });
         }
 

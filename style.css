@@ -141,6 +141,7 @@ body {
     transition: background-color 0.2s, color 0.2s, transform 0.1s;
     user-select: none;
     -webkit-user-select: none;
+    white-space: nowrap;
 }
 
 .tab-btn:hover {
@@ -480,6 +481,7 @@ h1 {
     text-align: center;
     width: max-content;
     max-width: 90vw;
+    box-sizing: border-box;
     word-break: break-word;
 }
 
@@ -1543,14 +1545,15 @@ h1 {
 
     .app-tab-bar {
         width: 100%;
-        max-width: 360px;
+        max-width: 100%;
+        box-sizing: border-box;
         justify-content: center;
     }
 
     .tab-btn {
         flex: 1;
-        padding: 8px 14px;
-        font-size: 0.9em;
+        padding: 8px 4px;
+        font-size: min(0.9em, 3.5vw);
     }
 
     .container {

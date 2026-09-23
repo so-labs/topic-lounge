@@ -1,4 +1,4 @@
-[
+﻿[
   {
     "group": "Gemini",
     "models": [
@@ -34,7 +34,7 @@
         "lightweight": true
       },
       {
-        "id": "gemini-3-flash",
+        "id": "gemini-3-flash-preview",
         "name": "Gemini 3 Flash",
         "lightweight": false
       },
@@ -56,12 +56,14 @@
       {
         "id": "gemma-4-26b-a4b-it",
         "name": "Gemma 4 26B",
-        "lightweight": false
+        "lightweight": true,
+        "timeout": 80000
       },
       {
         "id": "gemma-4-31b-it",
         "name": "Gemma 4 31B",
-        "lightweight": false
+        "lightweight": true,
+        "timeout": 80000
       }
     ]
   }
