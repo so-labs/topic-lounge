@@ -9,6 +9,8 @@ export function initRelay() {
     const DEFAULT_MEMORY_TURNS = 3;
     const MEMORY_MIN = 2;
     const MEMORY_MAX = 4;
+    // AIの出力の最大文字数（サーバー側と同じ値。履歴・表示・コピー内容の肥大化防止用）
+    const MAX_AI_TEXT_LENGTH = 500;
 
     function clampMemoryTurns(val) {
         const n = parseInt(val, 10);
@@ -370,7 +372,8 @@ export function initRelay() {
                 throw new Error(data.error || 'AIの応答取得に失敗しました。');
             }
 
-            const aiText = String(data.text || '').trim();
+            // サーバー側でもトリム済みだが、念のためクライアント側でも上限を超えないようにする
+            const aiText = Array.from(String(data.text || '').trim()).slice(0, MAX_AI_TEXT_LENGTH).join('').trim();
             if (!aiText) {
                 throw new Error('AIから有効なテキストが返却されませんでした。');
             }

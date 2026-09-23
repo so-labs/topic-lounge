@@ -15,6 +15,9 @@ const readJsonFile = (filePath) => {
 
 const API_KEY = process.env.GEMINI_API_KEY;
 
+// AIが生成する1ターンあたりの最大文字数（履歴・コンテキストの肥大化防止用）
+const MAX_STORY_CHARS = 500;
+
 // models.json から定義済みモデル一覧を読み込み（ホワイトリスト）
 let localValidModels = new Map();
 try {
@@ -182,6 +185,13 @@ ${formattedHistory ? formattedHistory : '（物語の開始です）'}
 
         // 余計な引用符や前後のMarkdownコードブロック記号等があれば除去
         text = text.replace(/^```[a-z]*\n?/i, "").replace(/\n?```$/i, "").trim();
+
+        // 上限を超えた場合はトリムする（サロゲートペアを壊さないようコードポイント単位で数える）
+        const textChars = Array.from(text);
+        if (textChars.length > MAX_STORY_CHARS) {
+            console.warn(`[relay] 生成結果が${MAX_STORY_CHARS}文字を超えたためトリムしました (元の文字数: ${textChars.length})`);
+            text = textChars.slice(0, MAX_STORY_CHARS).join("").trim();
+        }
 
         const elapsed = Date.now() - startTime;
         console.log(`[relay] 生成成功 (所要時間: ${elapsed}ms, turn: ${cleanTurn})`);
