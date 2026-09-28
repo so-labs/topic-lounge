@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja">
 
 <head>
@@ -17,6 +17,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Cloudflare Turnstile API スクリプト -->
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
     <!-- テーマ適用時のちらつき（FOUC）防止およびステータスバー色制御 -->
     <script>
         (function () {
@@ -304,6 +306,21 @@
                     style="font-family: monospace; font-size: 0.75em; opacity: 0.6; color: var(--text-color);">Ver
                     ---</span>
             </div>
+        </div>
+    </div>
+
+    <!-- Turnstile アクセス時認証モーダル -->
+    <div id="turnstileModal" class="modal-overlay hidden" aria-modal="true" role="dialog"
+        aria-labelledby="turnstileTitle">
+        <div class="modal-content turnstile-modal-content">
+            <div class="turnstile-modal-header">
+                <span class="turnstile-modal-icon" aria-hidden="true">🛡️</span>
+                <h2 id="turnstileTitle">セキュリティ確認</h2>
+                <p id="turnstileStatus" class="turnstile-status">安全なアクセスのため、確認を行っています...</p>
+            </div>
+            <div id="turnstileWidget" class="turnstile-widget-wrapper"></div>
+            <p id="turnstileError" class="error-message" style="display: none;"></p>
+            <button type="button" id="turnstileRetryBtn" class="turnstile-retry-btn" style="display: none;">再試行</button>
         </div>
     </div>
 

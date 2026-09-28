@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    Conversation Starter - スタイルシート
    構成:
      1. テーマ(カラーパレット)
@@ -899,6 +899,71 @@ h1 {
     100% {
         transform: rotate(360deg);
     }
+}
+
+/* Turnstile 認証モーダル */
+.turnstile-modal-content {
+    max-width: 400px;
+    width: 90%;
+    padding: 32px 28px;
+    box-sizing: border-box;
+}
+
+.turnstile-modal-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.turnstile-modal-icon {
+    font-size: 2.2rem;
+    line-height: 1;
+}
+
+#turnstileTitle {
+    font-size: 1.35rem;
+    font-weight: bold;
+    color: var(--text-color-strong);
+    margin: 0;
+}
+
+.turnstile-status {
+    font-size: 0.95rem;
+    color: var(--text-color);
+    margin: 0;
+    line-height: 1.5;
+}
+
+.turnstile-widget-wrapper {
+    min-height: 65px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin: 6px 0;
+}
+
+.turnstile-retry-btn {
+    appearance: none;
+    border: none;
+    background-color: var(--primary-color);
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: bold;
+    padding: 10px 24px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+}
+
+.turnstile-retry-btn:hover {
+    opacity: 0.9;
+}
+
+.turnstile-retry-btn:active {
+    transform: scale(0.97);
 }
 
 /* ============================================================

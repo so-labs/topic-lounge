@@ -1,4 +1,4 @@
-﻿/**
+/**
  * キャッシュバージョンの命名規則:
  * topic-lounge-YYYY.MM-rN
  *
@@ -6,7 +6,7 @@
  * MM   = 月（01〜12）
  * rN   = その月のリリース回数
  */
-const CACHE_NAME = 'topic-lounge-2026.09-r8';
+const CACHE_NAME = 'topic-lounge-2026.09-r9';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -18,6 +18,7 @@ const ASSETS_TO_CACHE = [
   './js/topics.js',
   './js/relay.js',
   './js/version.js',
+  './js/turnstile.js',
   './models.json',
   './manifest.json',
   './icons/icon.svg'
@@ -39,6 +40,8 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
+  // Cloudflare Turnstile認証およびAPIリクエストはキャッシュしない
+  if (event.request.url.includes('challenges.cloudflare.com') || event.request.url.includes('/api/')) return;
 
   event.respondWith(
     fetch(event.request)

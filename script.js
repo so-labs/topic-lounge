@@ -10,6 +10,7 @@ import { initTabs } from './js/tabs.js';
 import { initSettings } from './js/settings.js';
 import { initTopics } from './js/topics.js';
 import { initRelay } from './js/relay.js';
+import { initTurnstile } from './js/turnstile.js';
 
 // DOMContentLoaded で各モジュールを安全に初期化
 document.addEventListener('DOMContentLoaded', () => {
@@ -18,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initSettings();
     initTopics();
     initRelay();
+    initTurnstile();
 });
 
 // PWA Service Worker の登録
