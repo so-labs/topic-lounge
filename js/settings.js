@@ -349,14 +349,14 @@ export function initSettings() {
     function openPanel() {
         settingsPanel.classList.add('is-open');
         settingsPanel.setAttribute('aria-hidden', 'false');
-        settingsToggle.classList.add('is-hidden');
+        settingsToggle.classList.add('is-open');
     }
 
     function closePanel() {
         closeCustomSelect();
         settingsPanel.classList.remove('is-open');
         settingsPanel.setAttribute('aria-hidden', 'true');
-        settingsToggle.classList.remove('is-hidden');
+        settingsToggle.classList.remove('is-open');
     }
 
     if (settingsToggle) {
