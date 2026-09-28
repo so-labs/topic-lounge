@@ -1,14 +1,48 @@
 /**
  * ============================================================
  * Cloudflare Turnstile アクセス時認証モジュール
- * 初回アクセス時にボット検証を行い、成功後にセッションを保持してサイトを解放します。
+ * 初回アクセス時にボット検証を行い、成功後に7日間の認証状態を保持してサイトを解放します。
  * ============================================================
  */
 
 const TURNSTILE_SITE_KEY = '0x4AAAAAAFGOwp9Sc5n0RYKX';
 const VERIFIED_STORAGE_KEY = 'topic_lounge_turnstile_verified';
+const AUTH_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7日間
 
 let widgetId = null;
+
+/**
+ * Turnstile 認証が有効期限内かどうかを判定
+ * 期限切れまたは不正な値の場合は localStorage から削除して false を返す
+ * @returns {boolean}
+ */
+function isTurnstileVerified() {
+    try {
+        const storedValue = localStorage.getItem(VERIFIED_STORAGE_KEY);
+        if (storedValue === null) {
+            return false;
+        }
+
+        const expiresAt = Number(storedValue);
+        // 数値として正しいか確認（NaN, Infinity 等を排除）
+        if (!Number.isFinite(expiresAt) || expiresAt <= 0) {
+            localStorage.removeItem(VERIFIED_STORAGE_KEY);
+            return false;
+        }
+
+        // 現在時刻が保存された期限より前か確認
+        if (Date.now() < expiresAt) {
+            return true;
+        }
+
+        // 期限切れの場合
+        localStorage.removeItem(VERIFIED_STORAGE_KEY);
+        return false;
+    } catch (e) {
+        console.warn('[Turnstile] localStorage の参照に失敗しました:', e);
+        return false;
+    }
+}
 
 /**
  * Turnstile の初期化
@@ -22,8 +56,8 @@ export function initTurnstile() {
 
     if (!modal || !container) return;
 
-    // 既に同一セッションで認証済みの場合はスキップ
-    if (sessionStorage.getItem(VERIFIED_STORAGE_KEY) === 'true') {
+    // 既に認証済み（7日間の有効期間内）の場合はスキップ
+    if (isTurnstileVerified()) {
         modal.classList.add('hidden');
         return;
     }
@@ -110,7 +144,12 @@ async function verifyTokenWithServer(token) {
 
         if (response.ok && data.success) {
             if (statusText) statusText.textContent = '認証完了！サイトを読み込んでいます...';
-            sessionStorage.setItem(VERIFIED_STORAGE_KEY, 'true');
+            try {
+                const expiresAt = Date.now() + AUTH_DURATION_MS;
+                localStorage.setItem(VERIFIED_STORAGE_KEY, String(expiresAt));
+            } catch (e) {
+                console.warn('[Turnstile] localStorage への保存に失敗しました:', e);
+            }
 
             // 成功メッセージを一瞬表示してからモーダルをフェードアウト
             setTimeout(() => {
