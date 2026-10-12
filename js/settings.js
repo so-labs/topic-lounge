@@ -4,7 +4,6 @@
 
 import { getAppVersion } from './version.js';
 
-let currentIsRelay = false;
 let globalSelectCustomOption = null;
 
 // タブ切り替え時にモデル選択の表示を切り替える
@@ -19,7 +18,6 @@ export function filterModels(target) {
         isRelay = !!target;
         isHome = false;
     }
-    currentIsRelay = isRelay;
     const modelSelect = document.getElementById('modelSelect');
     const customSelectDropdown = document.getElementById('customSelectDropdown');
     if (!modelSelect || !customSelectDropdown) return;
@@ -107,13 +105,6 @@ export function filterModels(target) {
             const val = firstValidCustom.getAttribute('data-value');
             const text = firstValidCustom.querySelector('span')?.textContent || '';
             globalSelectCustomOption(val, text);
-        }
-    } else if (!isRelay) {
-        // お題生成に戻った際、保存済みのモデルがあれば復元
-        const saved = localStorage.getItem('selected_model');
-        const targetOpt = Array.from(modelSelect.options).find(o => o.value === saved);
-        if (targetOpt && globalSelectCustomOption) {
-            globalSelectCustomOption(saved, targetOpt.textContent);
         }
     }
 }
@@ -311,22 +302,6 @@ export function initSettings() {
             if (customSelectValue && selectedName) {
                 customSelectValue.textContent = selectedName;
             }
-
-            // 保存済みモデルがあれば復元
-            const savedModel = localStorage.getItem('selected_model');
-            if (savedModel && Array.from(modelSelect.options).some(o => o.value === savedModel)) {
-                const targetOpt = Array.from(modelSelect.options).find(o => o.value === savedModel);
-                if (targetOpt) {
-                    selectCustomOption(savedModel, targetOpt.textContent);
-                }
-            }
-
-            modelSelect.addEventListener('change', () => {
-                // 通常のお題生成での選択を記録
-                if (!currentIsRelay) {
-                    localStorage.setItem('selected_model', modelSelect.value);
-                }
-            });
 
             // 現在のURLハッシュに応じた初期フィルタリング
             const rawHash = window.location.hash.replace(/^#\/?/, '').toLowerCase();

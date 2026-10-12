@@ -6,7 +6,7 @@
  * MM   = 月（01〜12）
  * rN   = その月のリリース回数
  */
-const CACHE_NAME = 'topic-lounge-2026.09-r11';
+const CACHE_NAME = 'topic-lounge-2026.10-r1';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
