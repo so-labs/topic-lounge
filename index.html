@@ -331,6 +331,20 @@
         </div>
     </div>
 
+    <!-- リレー小説リセット確認モーダル -->
+    <div id="relayResetModal" class="modal-overlay hidden" role="dialog" aria-modal="true"
+        aria-labelledby="relayResetTitle" aria-describedby="relayResetDesc">
+        <div class="modal-content relay-reset-modal-content">
+            <span class="relay-reset-icon" aria-hidden="true">📖</span>
+            <h2 id="relayResetTitle">最初からやり直しますか？</h2>
+            <p id="relayResetDesc" class="relay-reset-desc">現在の物語は消去され、復元できません。</p>
+            <div class="relay-reset-actions">
+                <button type="button" id="relayResetCancelBtn" class="relay-btn-secondary">キャンセル</button>
+                <button type="button" id="relayResetConfirmBtn" class="primary-btn relay-reset-confirm">やり直す</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 生成中モーダル -->
     <div id="loadingModal" class="modal-overlay hidden">
         <div class="modal-content">

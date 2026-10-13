@@ -91,11 +91,11 @@ export function initTopics() {
                     clearTimeout(timeoutId);
                 }
             }, {
-                maxRetries: 2,
+                maxRetries: 4,
                 baseDelayMs: 1500,
                 onRetry: (attempt, maxRetries) => {
                     if (loadingText) {
-                        loadingText.textContent = `お題を再試行中 (${attempt}/${maxRetries})...`;
+                        loadingText.textContent = `お題生成を再試行中 (${attempt}/${maxRetries})...`;
                     }
                 }
             });

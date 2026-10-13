@@ -120,14 +120,14 @@ export function isRetryableError(error, status = 0) {
  * @template T
  * @param {(attempt: number) => Promise<T>} taskFn - 実行する非同期タスク
  * @param {Object} [options]
- * @param {number} [options.maxRetries=2] - 最大再試行回数（初回を含めると最大3回試行）
+ * @param {number} [options.maxRetries=4] - 最大再試行回数（初回を含めると最大5回試行）
  * @param {number} [options.baseDelayMs=1500] - 初回再試行までの待機ミリ秒（指数バックオフ）
  * @param {(attempt: number, maxRetries: number, delayMs: number, error: Error) => void} [options.onRetry] - 再試行前の通知コールバック
  * @returns {Promise<T>}
  */
 export async function withAutoRetry(taskFn, options = {}) {
     const {
-        maxRetries = 2,
+        maxRetries = 4,
         baseDelayMs = 1500,
         onRetry = null,
     } = options;
@@ -159,7 +159,7 @@ export async function withAutoRetry(taskFn, options = {}) {
                 throw error;
             }
 
-            // 指数バックオフ待機（1回目: 1.5s, 2回目: 3.0s）
+            // 指数バックオフ待機（1回目: 1.5s, 2回目: 3.0s, 3回目: 6.0s, 4回目: 12.0s）
             // タイムアウト系エラー（AbortError / TimeoutError / 504）はサーバーが高負荷なので、待機を長めに取る
             const isTimeout = (error.name === 'AbortError' || error.name === 'TimeoutError') ||
                 (error?.status === 504) ||

@@ -396,11 +396,11 @@ export function initRelay() {
                     clearTimeout(timeoutId);
                 }
             }, {
-                maxRetries: 2,
+                maxRetries: 4,
                 baseDelayMs: 1500,
                 onRetry: (attempt, maxRetries) => {
                     if (loadingText) {
-                        loadingText.textContent = `AIが応答を再試行中 (${attempt}/${maxRetries})...`;
+                        loadingText.textContent = `AIの応答取得を再試行中 (${attempt}/${maxRetries})...`;
                     }
                 }
             });
@@ -512,11 +512,48 @@ export function initRelay() {
         });
     }
 
-    resetBtn.addEventListener('click', () => {
-        if (confirm('現在の物語を中断して、最初からやり直しますか？\n（これまでの内容は消去されます）')) {
+    const resetModal = document.getElementById('relayResetModal');
+    const resetCancelBtn = document.getElementById('relayResetCancelBtn');
+    const resetConfirmBtn = document.getElementById('relayResetConfirmBtn');
+
+    function openResetModal() {
+        if (!resetModal) {
             resetStory();
+            return;
         }
-    });
+        resetModal.classList.remove('hidden');
+        if (resetCancelBtn) resetCancelBtn.focus();
+    }
+
+    function closeResetModal() {
+        if (resetModal) resetModal.classList.add('hidden');
+        if (resetBtn) resetBtn.focus();
+    }
+
+    resetBtn.addEventListener('click', openResetModal);
+
+    if (resetCancelBtn) {
+        resetCancelBtn.addEventListener('click', closeResetModal);
+    }
+
+    if (resetConfirmBtn) {
+        resetConfirmBtn.addEventListener('click', () => {
+            if (resetModal) resetModal.classList.add('hidden');
+            resetStory();
+            if (resetBtn) resetBtn.focus();
+        });
+    }
+
+    if (resetModal) {
+        resetModal.addEventListener('click', (e) => {
+            if (e.target === resetModal) closeResetModal();
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !resetModal.classList.contains('hidden')) {
+                closeResetModal();
+            }
+        });
+    }
 
     restartBtn.addEventListener('click', () => {
         resetStory();
