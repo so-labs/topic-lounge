@@ -1,8 +1,10 @@
-﻿/* ============================================================
+/* ============================================================
    直前リレー小説 (Relay Story) モジュール
    ============================================================ */
 
 import { showError, clearError } from './errorDisplay.js';
+import { withAutoRetry } from './retry.js';
+import { notifyGenerationSuccess, notifyGenerationFailure } from './notifications.js';
 
 export function initRelay() {
     const STORAGE_KEY = 'relay_story_state';
@@ -337,12 +339,10 @@ export function initRelay() {
 
         const selectedModel = (modelSelect && modelSelect.value) ? modelSelect.value : 'gemini-3.5-flash-lite';
 
-        // サーバー側のタイムアウトより少し長めに取り、サーバーからの分かりやすいエラーメッセージを優先しつつ、通信自体が固まった場合の保険として機能させる。
-        const RELAY_TIMEOUT_MS = 100000;
-        const abortController = new AbortController();
-        const timeoutId = setTimeout(() => {
-            abortController.abort();
-        }, RELAY_TIMEOUT_MS);
+        const loadingText = loadingIndicator ? loadingIndicator.querySelector('span') : null;
+        if (loadingText) {
+            loadingText.textContent = 'AIが物語の続きを執筆中...';
+        }
 
         try {
             const mem = clampMemoryTurns(state.memoryTurns);
@@ -351,26 +351,59 @@ export function initRelay() {
                 content: h.content
             }));
 
-            const response = await fetch('/api/relay', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    model: selectedModel,
-                    setting: state.setting,
-                    turn: state.turn,
-                    history: safeHistory,
-                    keepTurns: mem
-                }),
-                signal: abortController.signal
+            const data = await withAutoRetry(async () => {
+                const RELAY_TIMEOUT_MS = 100000;
+                const abortController = new AbortController();
+                const timeoutId = setTimeout(() => {
+                    abortController.abort();
+                }, RELAY_TIMEOUT_MS);
+
+                try {
+                    const response = await fetch('/api/relay', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            model: selectedModel,
+                            setting: state.setting,
+                            turn: state.turn,
+                            history: safeHistory,
+                            keepTurns: mem
+                        }),
+                        signal: abortController.signal
+                    });
+
+                    let resData = {};
+                    try {
+                        resData = await response.json();
+                    } catch {
+                        if (!response.ok) {
+                            const err = new Error(`通信エラーが発生しました (HTTP ${response.status})`);
+                            err.status = response.status;
+                            throw err;
+                        }
+                    }
+
+                    if (!response.ok) {
+                        const err = new Error(resData.error || `AIの応答取得に失敗しました (HTTP ${response.status})`);
+                        err.status = response.status;
+                        throw err;
+                    }
+
+                    return resData;
+                } finally {
+                    clearTimeout(timeoutId);
+                }
+            }, {
+                maxRetries: 2,
+                baseDelayMs: 1500,
+                onRetry: (attempt, maxRetries) => {
+                    if (loadingText) {
+                        loadingText.textContent = `AIが応答を再試行中 (${attempt}/${maxRetries})...`;
+                    }
+                }
             });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.error || 'AIの応答取得に失敗しました。');
-            }
 
             // サーバー側でもトリム済みだが、念のためクライアント側でも上限を超えないようにする
             const aiText = Array.from(String(data.text || '').trim()).slice(0, MAX_AI_TEXT_LENGTH).join('').trim();
@@ -382,6 +415,12 @@ export function initRelay() {
                 role: 'model',
                 content: aiText,
                 turn: state.turn
+            });
+
+            // PWAとしてインストールされている場合は成功通知を送信
+            notifyGenerationSuccess('relay', {
+                turn: state.turn,
+                text: aiText
             });
 
             if (state.turn >= 10) {
@@ -406,11 +445,15 @@ export function initRelay() {
             }
             saveState();
             render();
+            // バックグラウンド時は失敗通知を送信
+            notifyGenerationFailure('relay');
             showError(errorDisplay, error, {
                 timeoutMessage: 'AIの応答がタイムアウトしました。混雑している可能性があるため、再度試すか別のモデルをお試しください。'
             });
         } finally {
-            clearTimeout(timeoutId);
+            if (loadingText) {
+                loadingText.textContent = 'AIが物語の続きを執筆中...';
+            }
         }
     }
 

@@ -1,8 +1,10 @@
-﻿/* ============================================================
+/* ============================================================
    設定パネル & モデル選択モジュール
    ============================================================ */
 
 import { getAppVersion } from './version.js';
+import { isAutoRetryEnabled, setAutoRetryEnabled } from './retry.js';
+import { requestNotificationPermission, isInstalledPwa } from './notifications.js';
 
 let globalSelectCustomOption = null;
 
@@ -123,8 +125,22 @@ export function initSettings() {
     const customWordMode = document.getElementById('customWordMode');
     const customWordInput = document.getElementById('customWordInput');
     const appVersionDisplay = document.getElementById('appVersionDisplay');
+    const autoRetryCheckbox = document.getElementById('autoRetryCheckbox');
 
     if (!modelSelect || !settingsPanel) return;
+
+    // 自動リトライ設定の初期化
+    if (autoRetryCheckbox) {
+        autoRetryCheckbox.checked = isAutoRetryEnabled();
+        autoRetryCheckbox.addEventListener('change', async () => {
+            const enabled = autoRetryCheckbox.checked;
+            setAutoRetryEnabled(enabled);
+            // ONにした時、PWA環境かつ通知未設定なら許可を要求
+            if (enabled && isInstalledPwa()) {
+                await requestNotificationPermission();
+            }
+        });
+    }
 
     // バージョン情報の取得と表示
     if (appVersionDisplay) {

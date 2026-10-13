@@ -6,7 +6,7 @@
  * MM   = 月（01〜12）
  * rN   = その月のリリース回数
  */
-const CACHE_NAME = 'topic-lounge-2026.10-r1';
+const CACHE_NAME = 'topic-lounge-2026.10-r2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -19,6 +19,9 @@ const ASSETS_TO_CACHE = [
   './js/relay.js',
   './js/version.js',
   './js/turnstile.js',
+  './js/errorDisplay.js',
+  './js/retry.js',
+  './js/notifications.js',
   './models.json',
   './manifest.json',
   './icons/icon.svg'
@@ -51,5 +54,21 @@ self.addEventListener('fetch', (event) => {
         return response;
       })
       .catch(() => caches.match(event.request).then((cached) => cached || caches.match('./index.html')))
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if ('focus' in client) {
+          return client.focus();
+        }
+      }
+      if (self.clients.openWindow) {
+        return self.clients.openWindow('./');
+      }
+    })
   );
 });

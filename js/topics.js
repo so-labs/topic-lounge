@@ -1,8 +1,10 @@
-﻿/* ============================================================
+/* ============================================================
    お題生成 (Topics) モジュール
    ============================================================ */
 
 import { showError, clearError } from './errorDisplay.js';
+import { withAutoRetry } from './retry.js';
+import { notifyGenerationSuccess, notifyGenerationFailure } from './notifications.js';
 
 export function initTopics() {
     const generateButton = document.getElementById('generateButton');
@@ -13,6 +15,7 @@ export function initTopics() {
     const customWordMode = document.getElementById('customWordMode');
     const customWordInput = document.getElementById('customWordInput');
     const loadingModal = document.getElementById('loadingModal');
+    const loadingText = loadingModal ? loadingModal.querySelector('p') : null;
 
     if (!generateButton || !ideaDisplay || !errorDisplay) return;
 
@@ -44,36 +47,58 @@ export function initTopics() {
         }
 
         loadingModal.classList.remove('hidden');
-
-        // サーバー側のタイムアウトより少し長めに取り、サーバーからの分かりやすいエラーメッセージを優先しつつ、通信自体が固まった場合の保険として機能させる。
-        const RELAY_TIMEOUT_MS = 100000;
-        const abortController = new AbortController();
-        const timeoutId = setTimeout(() => {
-            abortController.abort();
-        }, RELAY_TIMEOUT_MS);
+        if (loadingText) {
+            loadingText.textContent = 'お題を生成中...';
+        }
 
         try {
-            const response = await fetch('/api/generate', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ model: selectedModel, mode, word }),
-                signal: abortController.signal,
-            });
+            const data = await withAutoRetry(async () => {
+                const RELAY_TIMEOUT_MS = 100000;
+                const abortController = new AbortController();
+                const timeoutId = setTimeout(() => {
+                    abortController.abort();
+                }, RELAY_TIMEOUT_MS);
 
-            let data = {};
-            try {
-                data = await response.json();
-            } catch {
-                if (!response.ok) {
-                    throw new Error(`通信エラーが発生しました (HTTP ${response.status})`);
+                try {
+                    const response = await fetch('/api/generate', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ model: selectedModel, mode, word }),
+                        signal: abortController.signal,
+                    });
+
+                    let resData = {};
+                    try {
+                        resData = await response.json();
+                    } catch {
+                        if (!response.ok) {
+                            const err = new Error(`通信エラーが発生しました (HTTP ${response.status})`);
+                            err.status = response.status;
+                            throw err;
+                        }
+                    }
+
+                    if (!response.ok) {
+                        const err = new Error(resData.error || `HTTP error! status: ${response.status}`);
+                        err.status = response.status;
+                        throw err;
+                    }
+
+                    return resData;
+                } finally {
+                    clearTimeout(timeoutId);
                 }
-            }
-
-            if (!response.ok) {
-                throw new Error(data.error || `HTTP error! status: ${response.status}`);
-            }
+            }, {
+                maxRetries: 2,
+                baseDelayMs: 1500,
+                onRetry: (attempt, maxRetries) => {
+                    if (loadingText) {
+                        loadingText.textContent = `お題を再試行中 (${attempt}/${maxRetries})...`;
+                    }
+                }
+            });
 
             if (data.idea) {
                 if (data.choices && Array.isArray(data.choices) && data.choices.length >= 2) {
@@ -81,6 +106,9 @@ export function initTopics() {
                 } else {
                     ideaDisplay.textContent = data.idea;
                 }
+
+                // PWAとしてインストールされている場合は成功通知を送信
+                notifyGenerationSuccess('topics', data.idea);
             } else {
                 ideaDisplay.textContent = '';
                 showError(errorDisplay, '生成に失敗しました。');
@@ -88,11 +116,15 @@ export function initTopics() {
         } catch (error) {
             console.error('クライアントサイドでのエラー:', error);
             ideaDisplay.textContent = '';
+            // バックグラウンド時は失敗通知を送信
+            notifyGenerationFailure('topics');
             showError(errorDisplay, error, {
                 timeoutMessage: '生成処理がタイムアウトしました。混雑しているか処理の重いモデルの可能性があるため、再度試すか別のモデルをお試しください。'
             });
         } finally {
-            clearTimeout(timeoutId);
+            if (loadingText) {
+                loadingText.textContent = 'お題を生成中...';
+            }
             generateButton.disabled = false;
             loadingModal.classList.add('hidden');
         }
