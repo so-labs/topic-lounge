@@ -8,18 +8,8 @@
         "lightweight": false
       },
       {
-        "id": "gemini-3.7-flash",
-        "name": "Gemini 3.7 Flash",
-        "lightweight": false
-      },
-      {
         "id": "gemini-3.6-flash",
         "name": "Gemini 3.6 Flash",
-        "lightweight": false
-      },
-      {
-        "id": "gemini-3.5-flash",
-        "name": "Gemini 3.5 Flash",
         "lightweight": false
       },
       {
