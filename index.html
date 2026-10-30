@@ -35,6 +35,17 @@
             } catch (e) { }
         })();
     </script>
+    <!-- Turnstile 認証済みの場合は認証ゲートを最初から描画しない（ちらつき防止） -->
+    <script>
+        (function () {
+            try {
+                var expiresAt = Number(localStorage.getItem('topic_lounge_turnstile_verified'));
+                if (Number.isFinite(expiresAt) && expiresAt > Date.now()) {
+                    document.documentElement.classList.add('turnstile-ok');
+                }
+            } catch (e) { }
+        })();
+    </script>
 </head>
 
 <body>
@@ -317,17 +328,26 @@
     </div>
 
     <!-- Turnstile アクセス時認証モーダル -->
-    <div id="turnstileModal" class="modal-overlay hidden" aria-modal="true" role="dialog"
+    <div id="turnstileModal" class="modal-overlay turnstile-gate" aria-modal="true" role="dialog"
         aria-labelledby="turnstileTitle">
         <div class="modal-content turnstile-modal-content">
             <div class="turnstile-modal-header">
-                <span class="turnstile-modal-icon" aria-hidden="true">🛡️</span>
-                <h2 id="turnstileTitle">セキュリティ確認</h2>
-                <p id="turnstileStatus" class="turnstile-status">安全なアクセスのため、確認を行っています...</p>
+                <span class="turnstile-modal-icon" aria-hidden="true">
+                    <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 3l7 3v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6l7-3z"></path>
+                        <path d="M9 12l2 2 4-4"></path>
+                    </svg>
+                </span>
+                <h2 id="turnstileTitle">あともう1ステップ</h2>
+                <p id="turnstileStatus" class="turnstile-status">継続するにはセキュリティチェックを完了してください</p>
             </div>
             <div id="turnstileWidget" class="turnstile-widget-wrapper"></div>
             <p id="turnstileError" class="error-message" style="display: none;"></p>
             <button type="button" id="turnstileRetryBtn" class="turnstile-retry-btn" style="display: none;">再試行</button>
+            <div class="turnstile-meta">
+                <div><b>IPアドレス</b>: <span id="turnstileIp">読み込み中…</span></div>
+            </div>
         </div>
     </div>
 

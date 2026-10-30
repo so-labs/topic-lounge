@@ -1,15 +1,38 @@
 /**
  * ============================================================
  * Cloudflare Turnstile アクセス時認証モジュール
- * 初回アクセス時にボット検証を行い、成功後に7日間の認証状態を保持してサイトを解放します。
+ * 初回アクセス時にボット検証を行い、成功後に24時間の認証状態を保持してサイトを解放します。
+ * 認証状態の実体はサーバーが発行する署名付き Cookie で、localStorage は画面側のヒントとして使います。
  * ============================================================
  */
 
 const TURNSTILE_SITE_KEY = '0x4AAAAAAFGOwp9Sc5n0RYKX';
 const VERIFIED_STORAGE_KEY = 'topic_lounge_turnstile_verified';
-const AUTH_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7日間
+const AUTH_DURATION_MS = 24 * 60 * 60 * 1000; // 24時間（lib/turnstile-session.js の SESSION_DURATION_SEC と合わせる）
 
 let widgetId = null;
+let authGuardInstalled = false; // fetch ガードの二重設置を防ぐフラグ
+
+/**
+ * IPアドレスをサーバーから取得して画面に表示
+ * ウィジェットの描画は待たない。取得に失敗しても認証自体には影響しない
+ */
+async function loadIpAddress() {
+    const ipEl = document.getElementById('turnstileIp');
+
+    try {
+        const response = await fetch('/api/session-info', {
+            cache: 'no-store',
+            signal: AbortSignal.timeout(5000)
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        if (ipEl) ipEl.textContent = data.ip || '取得できませんでした';
+    } catch (err) {
+        console.warn('[Turnstile] IPアドレスの取得に失敗しました:', err);
+        if (ipEl) ipEl.textContent = '取得できませんでした';
+    }
+}
 
 /**
  * Turnstile 認証が有効期限内かどうかを判定
@@ -45,6 +68,50 @@ function isTurnstileVerified() {
 }
 
 /**
+ * サーバーから「認証が必要」(401) と返されたときに、認証ゲートを再表示する
+ * Cookie の期限切れ・削除、localStorage の改ざんなどで「認証済み」の見た目とサーバー側の状態がずれた場合の復帰用
+ */
+function reopenGate() {
+    const modal = document.getElementById('turnstileModal');
+    if (!modal) return;
+
+    // 既にゲートが開いている間は何もしない（複数のリクエストが同時に 401 になった場合の重複防止）
+    const isOpen = !modal.classList.contains('hidden') && !document.documentElement.classList.contains('turnstile-ok');
+    if (isOpen) return;
+
+    try {
+        localStorage.removeItem(VERIFIED_STORAGE_KEY);
+    } catch (e) {
+        console.warn('[Turnstile] localStorage の更新に失敗しました:', e);
+    }
+    document.documentElement.classList.remove('turnstile-ok');
+    initTurnstile();
+}
+
+/**
+ * fetch をラップして、API が 401 + code=TURNSTILE_REQUIRED を返したらゲートを再表示する
+ * お題生成・リレー小説など、各機能のコードを個別に直さなくてもよいようにするための仕組み
+ */
+function installAuthGuard() {
+    if (authGuardInstalled || typeof window.fetch !== 'function') return;
+    authGuardInstalled = true;
+
+    const originalFetch = window.fetch.bind(window);
+    window.fetch = async (...args) => {
+        const response = await originalFetch(...args);
+        if (response.status === 401) {
+            // 呼び出し元の処理は待たせず、裏で中身を確認する
+            response.clone().json().then((data) => {
+                if (data && data.code === 'TURNSTILE_REQUIRED') {
+                    reopenGate();
+                }
+            }).catch(() => { });
+        }
+        return response;
+    };
+}
+
+/**
  * Turnstile の初期化
  */
 export function initTurnstile() {
@@ -56,7 +123,11 @@ export function initTurnstile() {
 
     if (!modal || !container) return;
 
-    // 既に認証済み（7日間の有効期間内）の場合はスキップ
+    installAuthGuard();
+
+    // localStorage の値は「ゲートを最初から出さないためのヒント」にすぎない
+    // 本当の認証済み判定は、サーバーが発行した署名付き Cookie を各 API が確認して行う
+    // 既に認証済み（24時間の有効期間内）の場合はスキップ
     if (isTurnstileVerified()) {
         modal.classList.add('hidden');
         return;
@@ -65,12 +136,28 @@ export function initTurnstile() {
     // モーダルを表示
     modal.classList.remove('hidden');
 
-    // 再試行ボタンのイベント
-    if (retryBtn) {
-        retryBtn.addEventListener('click', () => {
-            resetTurnstile();
-        });
+    // 再表示のときに、前回のエラーや完了メッセージが残らないようにする
+    if (errorContainer) {
+        errorContainer.textContent = '';
+        errorContainer.style.display = 'none';
     }
+    if (retryBtn) {
+        retryBtn.style.display = 'none';
+    }
+    if (statusText) {
+        statusText.textContent = '継続するにはセキュリティチェックを完了してください';
+    }
+
+    // 再試行ボタンのイベント
+    // （再表示のたびに initTurnstile が呼ばれるため、addEventListener ではなく onclick で二重登録を防ぐ）
+    if (retryBtn) {
+        retryBtn.onclick = () => {
+            resetTurnstile();
+        };
+    }
+
+    // IPアドレスは裏で取得しつつ、ウィジェットはすぐ描画する
+    loadIpAddress();
 
     // Turnstile スクリプトの読み込み待機とレンダリング
     renderWhenReady();
@@ -199,7 +286,7 @@ function resetTurnstile() {
         retryBtn.style.display = 'none';
     }
     if (statusText) {
-        statusText.textContent = '安全なアクセスのため、確認を行っています...';
+        statusText.textContent = '継続するにはセキュリティチェックを完了してください';
     }
 
     if (window.turnstile && widgetId !== null) {

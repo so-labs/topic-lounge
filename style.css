@@ -1021,6 +1021,104 @@ h1 {
     transform: scale(0.97);
 }
 
+/* Turnstile 認証ゲート: 背景を完全に不透明にして裏のコンテンツを見せない */
+.modal-overlay.turnstile-gate {
+    background-color: var(--bg-color);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
+
+/* 認証済みの場合は最初から描画しない（head のインラインスクリプトが html に付与） */
+html.turnstile-ok #turnstileModal {
+    display: none;
+}
+
+/* ゲート表示中は背面をスクロールさせない */
+body:has(.turnstile-gate:not(.hidden)) {
+    overflow: hidden;
+}
+
+.turnstile-gate .turnstile-modal-content {
+    width: calc(100% - 32px);
+    max-width: 420px;
+    padding: 48px 32px 36px;
+    gap: 0;
+    border: 1px solid var(--input-border);
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+}
+
+/* アイコン・見出し・補足文（.modal-content p の太字指定より優先させる） */
+.turnstile-gate .turnstile-modal-header {
+    gap: 0;
+}
+
+.turnstile-gate .turnstile-modal-icon {
+    display: flex;
+    color: var(--primary-color);
+    margin-bottom: 20px;
+}
+
+.turnstile-gate #turnstileTitle {
+    font-size: 2rem;
+    line-height: 1.3;
+    margin-bottom: 12px;
+}
+
+.turnstile-gate .turnstile-status {
+    font-size: 0.95rem;
+    font-weight: normal;
+    line-height: 1.6;
+    color: var(--text-color);
+    opacity: 0.7;
+}
+
+.turnstile-gate .turnstile-widget-wrapper {
+    margin: 36px 0 0;
+}
+
+.turnstile-gate #turnstileError {
+    margin: 16px 0 0;
+}
+
+.turnstile-gate .turnstile-retry-btn {
+    margin-top: 16px;
+}
+
+/* ゲート内のエラーはトースト化せず、カード内にそのまま表示する */
+.turnstile-gate .error-message {
+    position: static;
+    transform: none;
+    opacity: 1;
+    pointer-events: auto;
+    background-color: transparent;
+    box-shadow: none;
+    color: #e74c3c;
+    padding: 0;
+    width: auto;
+    max-width: 100%;
+    font-size: 0.9rem;
+}
+
+/* IPアドレス表示 */
+.turnstile-meta {
+    margin-top: 32px;
+    font-size: 0.75rem;
+    line-height: 1.8;
+    color: var(--text-color);
+    opacity: 0.75;
+}
+
+.turnstile-meta b {
+    color: var(--text-color-strong);
+    font-weight: 700;
+}
+
+.turnstile-meta span {
+    font-family: ui-monospace, Consolas, monospace;
+    word-break: break-all;
+}
+
 /* リレー小説リセット確認モーダル */
 .relay-reset-modal-content {
     max-width: 380px;

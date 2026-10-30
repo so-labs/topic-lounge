@@ -2,6 +2,7 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { requireSession } from "../lib/turnstile-session.js";
 
 // ESモジュールの環境で__dirnameと__filenameを再現
 const __filename = fileURLToPath(import.meta.url);
@@ -57,6 +58,11 @@ export default async function handler(request, response) {
 
     if (request.method !== 'POST') {
         return response.status(405).json({ message: 'Method Not Allowed' });
+    }
+
+    // Turnstile 認証済み（署名付き Cookie あり）のリクエストのみ受け付ける
+    if (!requireSession(request, response)) {
+        return;
     }
 
     const {

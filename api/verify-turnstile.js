@@ -1,7 +1,10 @@
 /**
  * Cloudflare Turnstile 検証用サーバーレス関数 (Vercel Functions)
  * クライアントから受け取った Turnstile トークンを Cloudflare の siteverify API で検証します。
+ * 検証に成功した場合は、認証済みを示す署名付き Cookie も発行します。
  */
+
+import { createSessionCookie } from '../lib/turnstile-session.js';
 
 export default async function handler(request, response) {
     if (request.method !== 'POST') {
@@ -47,7 +50,13 @@ export default async function handler(request, response) {
         const result = await cfResponse.json();
         console.log(`[verify-turnstile] 検証結果: success=${result.success}`);
 
+        // 問い合わせ対応用に、検証を行ったIPアドレスをログへ残す
+        const logIp = String(request.headers['x-forwarded-for'] || '').split(',')[0].trim();
+        console.log(`[verify-turnstile] ip=${logIp || '(不明)'}`);
+
         if (result.success) {
+            // 検証成功: 署名付きの HttpOnly Cookie を発行する（以降の API 呼び出しで「認証済み」の証明になる）
+            response.setHeader('Set-Cookie', createSessionCookie(request));
             return response.status(200).json({ success: true });
         } else {
             console.warn('[verify-turnstile] 検証失敗:', result['error-codes'] || []);

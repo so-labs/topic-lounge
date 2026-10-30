@@ -2,8 +2,6 @@
 
 本プロジェクトでは、コードの一貫性を保つため、人間の開発者とAIエージェントの両方が遵守すべきルールを **`AGENTS.md`** に一元化（Single Source of Truth）しています。
 
----
-
 ## 🤖 AIエージェントへの強制指示 (System Directive for AI)
 
 > **⚠️ CRITICAL**:
@@ -13,8 +11,6 @@
 > **You MUST read and strictly adhere to `AGENTS.md` before analyzing, proposing, or modifying any code.**
 >
 > (Do not look for rules here. Read `AGENTS.md` now.)
-
----
 
 ## 👨‍💻 人間の開発者へ
 
