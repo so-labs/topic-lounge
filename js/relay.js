@@ -5,6 +5,7 @@
 import { showError, clearError } from './errorDisplay.js';
 import { withAutoRetry } from './retry.js';
 import { notifyGenerationSuccess, notifyGenerationFailure } from './notifications.js';
+import { requireAuth } from './turnstile.js';
 
 export function initRelay() {
     const STORAGE_KEY = 'relay_story_state';
@@ -322,6 +323,11 @@ export function initRelay() {
         }
 
         clearError(errorDisplay);
+
+        // 未認証の場合はここでポップアップを出し、完了を待つ（執筆中アニメーション表示前）
+        const authed = await requireAuth();
+        if (!authed) return;
+
         state.isLoading = true;
 
         state.history.push({

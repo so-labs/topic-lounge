@@ -5,6 +5,7 @@
 import { showError, clearError } from './errorDisplay.js';
 import { withAutoRetry } from './retry.js';
 import { notifyGenerationSuccess, notifyGenerationFailure } from './notifications.js';
+import { requireAuth } from './turnstile.js';
 
 export function initTopics() {
     const generateButton = document.getElementById('generateButton');
@@ -44,6 +45,13 @@ export function initTopics() {
             if (choiceOnly && choiceOnly.checked) {
                 mode = 'custom_word_choice';
             }
+        }
+
+        // 未認証の場合はここでポップアップを出し、完了後に続行する
+        const authed = await requireAuth();
+        if (!authed) {
+            generateButton.disabled = false;
+            return;
         }
 
         loadingModal.classList.remove('hidden');
