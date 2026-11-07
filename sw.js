@@ -6,7 +6,7 @@
  * MM   = 月（01〜12）
  * rN   = その月のリリース回数
  */
-const CACHE_NAME = 'topic-lounge-2026.11-r1';
+const CACHE_NAME = 'topic-lounge-2026.11-r2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -22,6 +22,8 @@ const ASSETS_TO_CACHE = [
   './js/errorDisplay.js',
   './js/retry.js',
   './js/notifications.js',
+  './js/ngWords.js',
+  './data/ng-words-ja.json',
   './models.json',
   './manifest.json',
   './icons/icon.svg'

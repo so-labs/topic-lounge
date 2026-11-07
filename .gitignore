@@ -3,6 +3,7 @@ node_modules/
 devtools/
 package-lock.json
 .env*
+!.env.example
 *config.json
 *_local_*
 *.txt

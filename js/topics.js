@@ -6,6 +6,7 @@ import { showError, clearError } from './errorDisplay.js';
 import { withAutoRetry } from './retry.js';
 import { notifyGenerationSuccess, notifyGenerationFailure } from './notifications.js';
 import { requireAuth } from './turnstile.js';
+import { containsNgWord } from './ngWords.js';
 
 export function initTopics() {
     const generateButton = document.getElementById('generateButton');
@@ -38,6 +39,12 @@ export function initTopics() {
             word = (customWordInput.value || '').trim().slice(0, 10);
             if (!word) {
                 showError(errorDisplay, 'ワードを入力してください（単語・最大10文字）');
+                generateButton.disabled = false;
+                return;
+            }
+            // ブラウザ側 NGワードチェック
+            if (await containsNgWord(word)) {
+                showError(errorDisplay, '不適切なワードが含まれています。');
                 generateButton.disabled = false;
                 return;
             }

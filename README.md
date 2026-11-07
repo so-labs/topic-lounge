@@ -1,4 +1,4 @@
-﻿# 🛋️ Topic Lounge
+# 🛋️ Topic Lounge
 
 [![Demo](https://img.shields.io/badge/🚀%20Demo-Live-black?style=flat-square&logo=vercel)][demo]
 [![PWA](https://img.shields.io/badge/PWA-Ready-5A0FC8?style=flat-square&logo=pwa&logoColor=white)][demo]
@@ -70,19 +70,30 @@ Service Worker (`sw.js`) で使用するキャッシュ名 (`CACHE_NAME`) は、
 `package.json` の依存関係は以下の通りです。
 
 - `@google/genai`: Gemini APIを呼び出すための公式SDK
-- `naughty-words`: ワード指定モードで使うNGワード辞書
-  - `api/generate.js` はビルド成果物ではなく `node_modules/naughty-words/ja.json` を実行時に直接読み込んでいるため、このインストールは必須です。
+
+また、ワード指定モードのサーバー側NGワードチェックには、プロジェクトに同梱された `data/ng-words-ja.json` を使用しています。このファイルは [MosasoM/inappropriate-words-ja][inappropriate-words-ja] のNGワードリスト（性的表現・攻撃的表現）をJSON形式に変換してローカルに保持したものです（MITライセンス）。
 
 ### 3) 環境変数の設定（必須）
 
-`api/generate.js` および `api/relay.js` はサーバー側の環境変数 `GEMINI_API_KEY` を参照します。未設定の場合、生成ボタンを押すと「APIキーが設定されていません。」というエラーになります。
+本アプリのサーバーレス関数は以下の環境変数を使用します。
+
+|変数名|用途|取得先|
+|---|---|---|
+|`GEMINI_API_KEY`|Gemini APIの呼び出し|[Google AI Studio][gemini]|
+|`OPENAI_API_KEY`|OpenAI Moderation APIによる不適切コンテンツの追加チェック|[OpenAI Platform][openai]|
+|`TURNSTILE_SECRET_KEY`|Cloudflare Turnstileのトークン検証|[Cloudflare Dashboard][cloudflare-turnstile]|
+
+> [!WARNING]
+> `OPENAI_API_KEY` が未設定の場合、ワード指定モードで入力されたワードをサーバー側でModeration APIにより検証できないため、**安全側に倒してリクエストが拒否**されます。
 
 **ローカル開発の場合**:
 
-プロジェクトルートに `.env.local` を作成します。
+プロジェクトルートに `.env.local` を作成します（`.env.example` に変数名のみ記載しています）。
 
 ```plaintext
-GEMINI_API_KEY=あなたのAPIキー
+GEMINI_API_KEY=あなたのGemini APIキー
+OPENAI_API_KEY=あなたのOpenAI APIキー
+TURNSTILE_SECRET_KEY=あなたのTurnstileシークレットキー
 ```
 
 **Vercel本番環境の場合**:
@@ -149,6 +160,9 @@ vercel link
 > Before generating or modifying any code in this project, you **MUST** read the **`AGENTS.md`** file located in the root directory and strictly follow all the rules defined within it. Do not proceed without reading it.
 
 <!-- defs -->
+[license]: LICENSE
 [demo]: https://topic-lounge.vercel.app
 [gemini]: https://ai.google.dev/
-[license]: LICENSE
+[openai]: https://platform.openai.com/
+[cloudflare-turnstile]: https://dash.cloudflare.com/?to=/:account/turnstile
+[inappropriate-words-ja]: https://github.com/MosasoM/inappropriate-words-ja

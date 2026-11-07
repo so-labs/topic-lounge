@@ -1,4 +1,4 @@
-﻿import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI } from "@google/genai";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -16,10 +16,11 @@ const readJsonFile = (filePath) => {
 
 const questionsData = readJsonFile(path.join(__dirname, "questions.json"));
 const promptsData = readJsonFile(path.join(__dirname, "prompts.json"));
-// 汎用NGリスト（naughty-words）を起動時に一度だけ読み込み
-const ngWords = readJsonFile(path.join(__dirname, "..", "node_modules", "naughty-words", "ja.json"));
+// 汎用NGリスト（inappropriate-words-ja）を起動時に一度だけ読み込み
+const ngWords = readJsonFile(path.join(__dirname, "..", "data", "ng-words-ja.json"));
 
 const API_KEY = process.env.GEMINI_API_KEY;
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
 // models.json から定義済みモデル一覧を読み込み（ホワイトリスト）
 let localValidModels = new Map();
@@ -35,6 +36,49 @@ try {
     });
 } catch (e) {
     console.warn("models.jsonの読み込みに失敗しました:", e.message);
+}
+
+// OpenAI Moderation API でテキストをチェックする
+// キー未設定時は安全側に倒して送信を拒否する（false を返す）
+async function checkWithModerationAPI(text) {
+    if (!OPENAI_API_KEY) {
+        console.warn("[generate] OPENAI_API_KEY が未設定のため、Moderation APIによるチェックを行えません。安全側に倒して送信を拒否します。");
+        return false;
+    }
+    try {
+        console.log(`[generate] Moderation API 検証開始: "${text}"`);
+        const res = await fetch("https://api.openai.com/v1/moderations", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${OPENAI_API_KEY}`,
+            },
+            body: JSON.stringify({ model: "omni-moderation-latest", input: text }),
+        });
+        if (!res.ok) {
+            console.error(`[generate] Moderation API エラー (HTTP ${res.status})`);
+            return false;
+        }
+        const data = await res.json();
+        const result = data?.results?.[0];
+        const flagged = result?.flagged ?? true;
+
+        if (flagged) {
+            // フラグされたカテゴリをログに記録
+            const flaggedCategories = Object.entries(result?.categories || {})
+                .filter(([, val]) => val)
+                .map(([key]) => key)
+                .join(", ");
+            console.warn(`[generate] Moderation API: 不適切なコンテンツを検出しました (理由: ${flaggedCategories || '不明'})`);
+            return false;
+        }
+
+        console.log(`[generate] Moderation API: 安全確認完了 (通過: "${text}")`);
+        return true;
+    } catch (err) {
+        console.error("[generate] Moderation API 呼び出し失敗:", err.message);
+        return false;
+    }
 }
 
 // 配列をシャッフルするヘルパー関数
@@ -107,11 +151,16 @@ export default async function handler(request, response) {
         if (!allowedPattern.test(cleanWord)) {
             return response.status(400).json({ error: "単語のみ・10文字以内で入力してください。" });
         }
-        // 汎用NGリスト（naughty-words）でチェック - 最低限
+        // 汎用NGリスト（inappropriate-words-ja）でチェック - 最低限
         const hasNg = ngWords.some(w => cleanWord.toLowerCase().includes(w.toLowerCase()));
         // URLや記号の羅列は別途チェック
         const ngPattern = /(https?:\/\/|www\.|[<>{}[\]\\\/])/i;
         if (ngPattern.test(cleanWord) || hasNg) {
+            return response.status(400).json({ error: "不適切なワードが含まれています。" });
+        }
+        // サーバー側 Moderation API による追加チェック（ブラウザ側チェックの回避対策）
+        const moderationOk = await checkWithModerationAPI(cleanWord);
+        if (!moderationOk) {
             return response.status(400).json({ error: "不適切なワードが含まれています。" });
         }
     }

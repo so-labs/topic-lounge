@@ -6,6 +6,7 @@ import { showError, clearError } from './errorDisplay.js';
 import { withAutoRetry } from './retry.js';
 import { notifyGenerationSuccess, notifyGenerationFailure } from './notifications.js';
 import { requireAuth } from './turnstile.js';
+import { containsNgWord } from './ngWords.js';
 
 export function initRelay() {
     const STORAGE_KEY = 'relay_story_state';
@@ -324,6 +325,13 @@ export function initRelay() {
 
         clearError(errorDisplay);
 
+        // ブラウザ側 NGワードチェック
+        if (await containsNgWord(text)) {
+            showError(errorDisplay, '不適切な表現が含まれています。内容を修正してください。');
+            storyInput.focus();
+            return;
+        }
+
         // 未認証の場合はここでポップアップを出し、完了を待つ（執筆中アニメーション表示前）
         const authed = await requireAuth();
         if (!authed) return;
@@ -468,11 +476,20 @@ export function initRelay() {
         settingCount.textContent = `${settingInput.value.length} / 100`;
     });
 
-    startBtn.addEventListener('click', () => {
+    startBtn.addEventListener('click', async () => {
+        const settingText = settingInput.value.trim().slice(0, 100);
+
+        // ブラウザ側 NGワードチェック（設定テキスト）
+        if (settingText && await containsNgWord(settingText)) {
+            showError(errorDisplay, '設定テキストに不適切な表現が含まれています。内容を修正してください。');
+            settingInput.focus();
+            return;
+        }
+
         if (memorySelect) {
             state.memoryTurns = clampMemoryTurns(memorySelect.value);
         }
-        state.setting = settingInput.value.trim().slice(0, 100);
+        state.setting = settingText;
         state.turn = 1;
         state.history = [];
         state.isFinished = false;
