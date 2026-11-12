@@ -3,7 +3,7 @@
    ============================================================ */
 
 import { getAppVersion } from './version.js';
-import { isAutoRetryEnabled, setAutoRetryEnabled } from './retry.js';
+import { setAutoRetryEnabled } from './retry.js';
 import { requestNotificationPermission, isInstalledPwa } from './notifications.js';
 
 let globalSelectCustomOption = null;
@@ -129,9 +129,9 @@ export function initSettings() {
 
     if (!modelSelect || !settingsPanel) return;
 
-    // 自動リトライ設定の初期化
+    // 自動リトライ設定の初期化（ページ読み込み時は常にOFF）
     if (autoRetryCheckbox) {
-        autoRetryCheckbox.checked = isAutoRetryEnabled();
+        autoRetryCheckbox.checked = false;
         autoRetryCheckbox.addEventListener('change', async () => {
             const enabled = autoRetryCheckbox.checked;
             setAutoRetryEnabled(enabled);

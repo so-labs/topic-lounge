@@ -52,6 +52,7 @@ export function initRelay() {
 
     const fullStoryEl = document.getElementById('relayFullStory');
     const copyBtn = document.getElementById('relayCopyBtn');
+    const copyMarkdownBtn = document.getElementById('relayCopyMarkdownBtn');
     const restartBtn = document.getElementById('relayRestartBtn');
     const modelSelect = document.getElementById('modelSelect');
     const memorySelect = document.getElementById('relayMemorySelect');
@@ -121,25 +122,19 @@ export function initRelay() {
         return false;
     }
 
-    // 全状態リセット（memoryTurns は維持）
+    // 全状態リセット（memoryTurns はデフォルトに戻す）
     function resetStory() {
-        const keepMemory = clampMemoryTurns(state.memoryTurns);
         state = {
             setting: '',
             turn: 1,
             history: [],
             isFinished: false,
             isLoading: false,
-            memoryTurns: keepMemory,
+            memoryTurns: DEFAULT_MEMORY_TURNS,
             isShowingFinish: false
         };
         try {
             localStorage.removeItem(STORAGE_KEY);
-            // memoryTurns は保持するため再保存
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-            // ただしリセット直後は初期状態として扱うため、履歴なし状態を残したままにするのではなく
-            // 次回 render で setupView が表示されるように、履歴を空にした状態を保存
-            // 上記で保存したものを維持するが、開始前なので memorySelect の無効化を解除するため save は必要
         } catch (e) { }
 
         settingInput.value = '';
@@ -294,8 +289,13 @@ export function initRelay() {
         }, 50);
     }
 
-    // 完結画面の全文レンダリング
+    // 完結画面の全文レンダリング（テキスト形式で表示）
     function renderFullStory() {
+        fullStoryEl.textContent = buildPlainText();
+    }
+
+    // プレーンテキスト形式で全文を生成
+    function buildPlainText() {
         const storyParts = [];
         if (state.setting) {
             storyParts.push(`【世界観・設定】\n${state.setting}\n`);
@@ -308,8 +308,33 @@ export function initRelay() {
         });
 
         storyParts.push(episodes.join('\n\n'));
-        const fullText = storyParts.join('\n');
-        fullStoryEl.textContent = fullText;
+        return storyParts.join('\n');
+    }
+
+    // Markdown形式で全文を生成
+    function buildMarkdownText() {
+        const lines = [];
+        const titleName = state.setting ? state.setting.slice(0, 20) : '直前リレー小説';
+        lines.push(`# ${titleName}`);
+        lines.push('');
+
+        const metaItems = [];
+        if (state.setting) {
+            metaItems.push(`- 世界観・設定: ${state.setting}`);
+        }
+        metaItems.push(`- AI記憶ターン数: ${clampMemoryTurns(state.memoryTurns)}ターン`);
+        lines.push(...metaItems);
+        lines.push('');
+
+        state.history.forEach(item => {
+            const speaker = item.role === 'user' ? '人間' : 'AI';
+            lines.push(`## 第${item.turn}ターン - ${speaker}`);
+            lines.push('');
+            lines.push(item.content);
+            lines.push('');
+        });
+
+        return lines.join('\n').trimEnd();
     }
 
     // AIへの送信処理
@@ -583,7 +608,7 @@ export function initRelay() {
     });
 
     copyBtn.addEventListener('click', async () => {
-        const textToCopy = fullStoryEl.textContent;
+        const textToCopy = buildPlainText();
         if (!textToCopy) return;
 
         try {
@@ -600,6 +625,27 @@ export function initRelay() {
             alert('コピーに失敗しました。画面のテキストを手動で選択してコピーしてください。');
         }
     });
+
+    if (copyMarkdownBtn) {
+        copyMarkdownBtn.addEventListener('click', async () => {
+            const textToCopy = buildMarkdownText();
+            if (!textToCopy) return;
+
+            try {
+                await navigator.clipboard.writeText(textToCopy);
+                const originalText = copyMarkdownBtn.textContent;
+                copyMarkdownBtn.textContent = 'コピーしました！';
+                copyMarkdownBtn.disabled = true;
+                setTimeout(() => {
+                    copyMarkdownBtn.textContent = originalText;
+                    copyMarkdownBtn.disabled = false;
+                }, 2000);
+            } catch (e) {
+                console.error('コピー失敗:', e);
+                alert('コピーに失敗しました。画面のテキストを手動で選択してコピーしてください。');
+            }
+        });
+    }
 
     // 初期化
     loadState();

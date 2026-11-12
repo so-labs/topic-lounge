@@ -4,30 +4,23 @@
    APIクォータ上限や不正なリクエスト等の恒久的なエラーはリトライ対象外とします。
    ============================================================ */
 
-export const AUTO_RETRY_STORAGE_KEY = 'topic_lounge_auto_retry';
+// 自動リトライのON/OFFをメモリ上で管理（ページ読み込み時は常にOFF）
+let autoRetryEnabled = false;
 
 /**
  * 自動リトライ設定が有効になっているかを取得する
  * @returns {boolean}
  */
 export function isAutoRetryEnabled() {
-    try {
-        return localStorage.getItem(AUTO_RETRY_STORAGE_KEY) === 'true';
-    } catch {
-        return false;
-    }
+    return autoRetryEnabled;
 }
 
 /**
- * 自動リトライ設定のON/OFFを保存する
+ * 自動リトライ設定のON/OFFを切り替える（ページをまたいで記憶しない）
  * @param {boolean} enabled
  */
 export function setAutoRetryEnabled(enabled) {
-    try {
-        localStorage.setItem(AUTO_RETRY_STORAGE_KEY, enabled ? 'true' : 'false');
-    } catch (e) {
-        console.warn('[retry] localStorageへの書き込みに失敗しました:', e);
-    }
+    autoRetryEnabled = !!enabled;
 }
 
 /**

@@ -99,7 +99,7 @@
                     <div class="relay-setting-group">
                         <label for="relaySettingInput">共通設定・世界観（最大100文字）</label>
                         <input type="text" id="relaySettingInput" placeholder="例: 記憶をなくした猫と、雨の降らないサイバーパンク都市"
-                            maxlength="100">
+                            maxlength="100" autocomplete="off">
                         <span class="char-counter" id="relaySettingCount">0 / 100</span>
                     </div>
                     <button id="relayStartBtn" class="primary-btn">物語を始める</button>
@@ -168,7 +168,8 @@
                     </div>
 
                     <div class="relay-finish-actions">
-                        <button id="relayCopyBtn" class="primary-btn">全文をコピー</button>
+                        <button id="relayCopyBtn" class="primary-btn">テキストでコピー</button>
+                        <button id="relayCopyMarkdownBtn" class="relay-btn-secondary">Markdownでコピー</button>
                         <button id="relayRestartBtn" class="relay-btn-secondary">新しい物語を始める</button>
                     </div>
                 </div>
