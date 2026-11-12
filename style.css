@@ -1721,6 +1721,15 @@ body:has(#turnstileModal:not(.hidden)) {
         border-color: #4a627a;
         color: #ECF0F1;
     }
+
+    :root:not([data-theme="light"]) .relay-btn-secondary {
+        background-color: #4a627a;
+        color: #FFFFFF;
+    }
+
+    :root:not([data-theme="light"]) .relay-btn-secondary:hover {
+        background-color: #5a7a96;
+    }
 }
 
 /* ダークテーマ: 明示的dark選択時 */
@@ -1777,6 +1786,15 @@ body:has(#turnstileModal:not(.hidden)) {
     background-color: #283747;
     border-color: #4a627a;
     color: #ECF0F1;
+}
+
+[data-theme="dark"] .relay-btn-secondary {
+    background-color: #4a627a;
+    color: #FFFFFF;
+}
+
+[data-theme="dark"] .relay-btn-secondary:hover {
+    background-color: #5a7a96;
 }
 
 /* ============================================================
