@@ -107,7 +107,16 @@ export function initRelay() {
                 if (parsed && typeof parsed.turn === 'number') {
                     state = Object.assign(state, parsed);
                     state.isLoading = false;
-                    state.memoryTurns = clampMemoryTurns(parsed.memoryTurns ?? DEFAULT_MEMORY_TURNS);
+                    const isStarted = (Array.isArray(parsed.history) && parsed.history.length > 0)
+                        || parsed.turn > 1
+                        || Boolean(parsed.isFinished);
+                    // リレー小説を開始していない場合のみ、リロード時にデフォルト（3ターン）に戻す
+                    // （開始している場合はその物語で設定した記憶ターン数を維持し、物語リセット時に3へ戻す）
+                    if (isStarted) {
+                        state.memoryTurns = clampMemoryTurns(parsed.memoryTurns ?? DEFAULT_MEMORY_TURNS);
+                    } else {
+                        state.memoryTurns = DEFAULT_MEMORY_TURNS;
+                    }
                     if (typeof parsed.isShowingFinish !== 'boolean') {
                         state.isShowingFinish = false;
                         // 旧データで isFinished が true なら、チャット画面を先に見せる仕様に合わせるため false のまま
