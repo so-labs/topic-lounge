@@ -1,4 +1,4 @@
-﻿import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI } from "@google/genai";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -122,8 +122,8 @@ ${formattedHistory ? formattedHistory : '（物語の開始です）'}
             temperature: 0.8,
         };
 
-        // Gemma 4またはGemini 3モデルの場合、推論内容（Thinking）を抑制する設定を追加
-        if (selectedModel.startsWith("gemma-4") || selectedModel.startsWith("gemini-3")) {
+        // Gemma 4またはGemini 3、Gemini 4モデルの場合、推論内容（Thinking）を抑制する設定を追加
+        if (selectedModel.startsWith("gemma-4") || selectedModel.startsWith("gemini-3") || selectedModel.startsWith("gemini-4")) {
             generationConfig.thinkingConfig = {
                 includeThoughts: false,
             };

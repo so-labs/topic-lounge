@@ -238,8 +238,8 @@ export default async function handler(request, response) {
             generationConfig.responseMimeType = "application/json";
         }
 
-        // Gemma 4またはGemini 3モデルの場合、推論内容（Thinking）を抑制する設定を追加
-        if (selectedModel.startsWith("gemma-4") || selectedModel.startsWith("gemini-3")) {
+        // Gemma 4またはGemini 3、Gemini 4モデルの場合、推論内容（Thinking）を抑制する設定を追加
+        if (selectedModel.startsWith("gemma-4") || selectedModel.startsWith("gemini-3") || selectedModel.startsWith("gemini-4")) {
             generationConfig.thinkingConfig = {
                 includeThoughts: false,
                 // thinkingLevel: "MINIMAL" // 必要に応じて完全に生成を抑制する場合に使用
