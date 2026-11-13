@@ -179,6 +179,21 @@ function installAuthGuard() {
 }
 
 /**
+ * 現在のサイト設定（data-theme属性）およびシステム設定に応じた Turnstile 用のテーマを取得
+ * - data-theme="dark"  -> 'dark'
+ * - data-theme="light" -> 'light'
+ * - 未指定 (system)     -> 'auto'（ブラウザ/OSの設定に追従）
+ * @returns {'auto' | 'dark' | 'light'}
+ */
+function getTurnstileTheme() {
+    const dataTheme = document.documentElement.getAttribute('data-theme');
+    if (dataTheme === 'dark' || dataTheme === 'light') {
+        return dataTheme;
+    }
+    return 'auto';
+}
+
+/**
  * Turnstile の初期化
  * fetch ガードを設置するのみで、ゲートは即時表示しない
  */
@@ -201,7 +216,7 @@ function renderWhenReady(attempt = 0) {
 
             widgetId = window.turnstile.render(container, {
                 sitekey: TURNSTILE_SITE_KEY,
-                theme: 'auto',
+                theme: getTurnstileTheme(),
                 callback: async (token) => {
                     if (statusText) statusText.textContent = '確認中...';
                     await verifyTokenWithServer(token);
