@@ -1,11 +1,11 @@
-# 🛋️ Topic Lounge
+﻿# 🛋️ Topic Lounge
 
 [![Demo](https://img.shields.io/badge/🚀%20Demo-Live-black?style=flat-square&logo=vercel)][demo]
 [![PWA](https://img.shields.io/badge/PWA-Ready-5A0FC8?style=flat-square&logo=pwa&logoColor=white)][demo]
 [![Gemini API](https://img.shields.io/badge/Gemini%20API-Powered-4285F4?style=flat-square&logo=google&logoColor=white)][gemini]
 [![License](https://img.shields.io/badge/License-MIT-22c55e?style=flat-square)][license]
 
-Gemini APIを活用した、会話のきっかけや物語を生み出すAIラウンジです。上部タブで複数のAIツールを切り替えながら使えます。
+Gemini APIを活用した、会話のきっかけや物語を生み出すAIラウンジです。下部タブで複数のAIツールを切り替えながら使えます。
 
 ## ✨ 1. 主な機能
 

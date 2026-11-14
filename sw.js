@@ -1,4 +1,4 @@
-/**
+﻿/**
  * キャッシュバージョンの命名規則:
  * topic-lounge-YYYY.MM-rN
  *
@@ -6,7 +6,7 @@
  * MM   = 月（01〜12）
  * rN   = その月のリリース回数
  */
-const CACHE_NAME = 'topic-lounge-2026.11-r6';
+const CACHE_NAME = 'topic-lounge-2026.11-r7';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

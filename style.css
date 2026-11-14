@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    Conversation Starter - スタイルシート
    構成:
      1. テーマ(カラーパレット)
@@ -92,7 +92,8 @@ body {
     margin: 0;
     background-color: var(--bg-color);
     padding: 24px 20px;
-    padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+    /* 下部固定タブバー(.app-tab-bar)の高さ分の余白を確保 */
+    padding-bottom: calc(24px + 56px + env(safe-area-inset-bottom, 0px));
     box-sizing: border-box;
 }
 
@@ -108,14 +109,19 @@ body {
     flex: 1;
 }
 
-.theme-toggle-container {
-    margin-top: auto;
-    padding-top: 10px;
-}
-
-/* 上部タブバー(ツール切り替え) */
+/* 下部タブバー(ツール切り替え): 画面下部に固定し、スマホで親指が届きやすくする */
 .app-tab-bar {
-    display: inline-flex;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    /* 設定FAB(99)・設定パネル(100)より下、モーダル(9999)より下 */
+    z-index: 90;
+    width: fit-content;
+    max-width: calc(100% - 24px);
+    margin: 0 auto;
+    box-sizing: border-box;
+    display: flex;
     background-color: var(--container-bg);
     border-radius: 30px;
     padding: 5px;
@@ -848,18 +854,29 @@ h1 {
 /* ============================================================
    4. コンポーネント: テーマ切り替えトグル
    ============================================================ */
+/* 設定パネル内の「テーマ:」見出し(モデル選択のラベルと同じ見た目) */
+.theme-select-label {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--text-color);
+    font-size: 0.95em;
+    font-weight: bold;
+}
+
+/* 設定パネル内の3分割セグメント。パネル幅いっぱいに広げる */
 .theme-toggle {
-    display: inline-flex;
-    background-color: var(--container-bg);
+    display: flex;
+    background-color: var(--bg-color);
     border-radius: 30px;
-    padding: 5px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 4px;
+    gap: 2px;
 }
 
 .theme-option {
     cursor: pointer;
     position: relative;
     display: flex;
+    flex: 1;
     align-items: center;
 }
 
@@ -871,21 +888,31 @@ h1 {
 }
 
 .theme-option span {
+    flex: 1;
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 10px 20px;
-    font-size: 0.9em;
+    justify-content: center;
+    gap: 5px;
+    padding: 8px 6px;
+    font-size: 0.8em;
     font-weight: bold;
+    white-space: nowrap;
     color: var(--text-color);
     border-radius: 25px;
     transition: background-color 0.2s, color 0.2s;
 }
 
-/* 選択中のオプションを強調表示 */
+/* 選択中のオプションを強調表示(トラックより一段浮かせる) */
 .theme-option input:checked+span {
-    background-color: var(--toggle-active-bg);
+    background-color: var(--container-bg);
     color: var(--text-color-strong);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* キーボード操作時のフォーカス表示 */
+.theme-option input:focus-visible+span {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 1px;
 }
 
 /* ============================================================
@@ -1803,7 +1830,8 @@ body:has(#turnstileModal:not(.hidden)) {
 @media (max-width: 600px) {
     body {
         padding: 12px;
-        padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+        /* 下部固定タブバー(.app-tab-bar)の高さ分の余白を確保 */
+        padding-bottom: calc(12px + 60px + env(safe-area-inset-bottom, 0px));
     }
 
     .main-wrapper {
@@ -1811,8 +1839,8 @@ body:has(#turnstileModal:not(.hidden)) {
     }
 
     .app-tab-bar {
-        width: 100%;
-        max-width: 100%;
+        width: calc(100% - 24px);
+        max-width: 520px;
         box-sizing: border-box;
         justify-content: center;
     }

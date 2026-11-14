@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ja">
 
 <head>
@@ -39,7 +39,7 @@
 
 <body>
     <div class="main-wrapper">
-        <!-- 上部タブバー -->
+        <!-- 下部タブバー（CSSで画面下部に固定表示） -->
         <nav class="app-tab-bar" role="tablist" aria-label="機能切り替え">
             <button type="button" class="tab-btn active" role="tab" id="tabHome" aria-selected="true"
                 aria-controls="viewHome">ホーム</button>
@@ -175,51 +175,6 @@
                 </div>
             </div>
         </section>
-
-        <!-- テーマ切り替え -->
-        <div class="theme-toggle-container">
-            <div class="theme-toggle">
-                <label class="theme-option">
-                    <input type="radio" name="theme" value="light">
-                    <span>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="5"></circle>
-                            <line x1="12" y1="1" x2="12" y2="3"></line>
-                            <line x1="12" y1="21" x2="12" y2="23"></line>
-                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                            <line x1="1" y1="12" x2="3" y2="12"></line>
-                            <line x1="21" y1="12" x2="23" y2="12"></line>
-                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                        </svg>
-                        ライト
-                    </span>
-                </label>
-                <label class="theme-option">
-                    <input type="radio" name="theme" value="system" checked>
-                    <span>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <path d="M12 2a10 10 0 0 1 0 20Z" fill="currentColor"></path>
-                        </svg>
-                        システム
-                    </span>
-                </label>
-                <label class="theme-option">
-                    <input type="radio" name="theme" value="dark">
-                    <span>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                        </svg>
-                        ダーク
-                    </span>
-                </label>
-            </div>
-        </div>
     </div>
 
     <!-- 設定フローティングボタン -->
@@ -278,6 +233,51 @@
             <!-- 共通設定 -->
             <div class="common-settings">
                 <div class="settings-group-title">共通設定</div>
+                <!-- テーマ切り替え -->
+                <div class="theme-select-container">
+                    <span id="themeSelectLabel" class="theme-select-label">テーマ:</span>
+                    <div class="theme-toggle" role="radiogroup" aria-labelledby="themeSelectLabel">
+                        <label class="theme-option">
+                            <input type="radio" name="theme" value="light">
+                            <span>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="5"></circle>
+                                    <line x1="12" y1="1" x2="12" y2="3"></line>
+                                    <line x1="12" y1="21" x2="12" y2="23"></line>
+                                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                                    <line x1="1" y1="12" x2="3" y2="12"></line>
+                                    <line x1="21" y1="12" x2="23" y2="12"></line>
+                                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                                </svg>
+                                ライト
+                            </span>
+                        </label>
+                        <label class="theme-option">
+                            <input type="radio" name="theme" value="system" checked>
+                            <span>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <path d="M12 2a10 10 0 0 1 0 20Z" fill="currentColor"></path>
+                                </svg>
+                                システム
+                            </span>
+                        </label>
+                        <label class="theme-option">
+                            <input type="radio" name="theme" value="dark">
+                            <span>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                                </svg>
+                                ダーク
+                            </span>
+                        </label>
+                    </div>
+                </div>
                 <div class="model-select-container">
                     <label id="modelSelectLabel" for="customSelectTrigger">モデルを選択:</label>
                     <div class="custom-select-wrapper" id="customSelectWrapper">
