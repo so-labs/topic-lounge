@@ -92,8 +92,6 @@ body {
     margin: 0;
     background-color: var(--bg-color);
     padding: 24px 20px;
-    /* 下部固定タブバー(.app-tab-bar)の高さ分の余白を確保 */
-    padding-bottom: calc(24px + 56px + env(safe-area-inset-bottom, 0px));
     box-sizing: border-box;
 }
 
@@ -109,16 +107,10 @@ body {
     flex: 1;
 }
 
-/* 下部タブバー(ツール切り替え): 画面下部に固定し、スマホで親指が届きやすくする */
+/* タブバー(ツール切り替え): PCではページ上部に通常配置する(スマホのみ下部固定は後段のメディアクエリで指定) */
 .app-tab-bar {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
-    /* 設定FAB(99)・設定パネル(100)より下、モーダル(9999)より下 */
-    z-index: 90;
     width: fit-content;
-    max-width: calc(100% - 24px);
+    max-width: 100%;
     margin: 0 auto;
     box-sizing: border-box;
     display: flex;
@@ -1838,7 +1830,14 @@ body:has(#turnstileModal:not(.hidden)) {
         gap: 14px;
     }
 
+    /* スマホのみタブバーを画面下部に固定し、親指が届きやすくする */
     .app-tab-bar {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+        /* 設定FAB(99)・設定パネル(100)より下、モーダル(9999)より下 */
+        z-index: 90;
         width: calc(100% - 24px);
         max-width: 520px;
         box-sizing: border-box;
